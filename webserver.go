@@ -1,4 +1,4 @@
-package webserver
+package mcron
 
 import (
 	"log"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	TMP_DIR = "github.com/guoxuivy/mcron/webserver/template"
+	TMP_DIR = "github.com/guoxuivy/mcron/template"
 )
 
 //web服务器开始工作（可以用已有的php替换自带的web服务器）

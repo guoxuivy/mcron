@@ -1,4 +1,4 @@
-package webserver
+package mcron
 
 import (
 	"html/template"

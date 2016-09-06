@@ -1,4 +1,4 @@
-package schedule
+package mcron
 
 import (
 	"log"
