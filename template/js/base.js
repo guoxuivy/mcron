@@ -1,6 +1,6 @@
 $("#logout").click(function(event){
     event.preventDefault();
-    del_cookie("admin_name");
+    del_cookie("admin_id");
     window.location.href = "/login/index";
 })
 

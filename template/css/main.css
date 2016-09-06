@@ -1,12 +1,7 @@
-body, ul, li{margin:0;padding:0}
-
-.login{}
-
-
 .head {
     position:absolute;
-    width:100%;
-    height: 80px;
+    width:90%;
+    height: 70px;
     border-bottom:1px solid #AAA;
 }
 .head_left {
@@ -17,44 +12,57 @@ body, ul, li{margin:0;padding:0}
 }
 .head_right {
     position:absolute;
+    width:20%;
     left:70%;
-    width: 30%;
-    padding-top: 30px;
-    text-align: right;
+    height: 70px;
 }
-
-.main_frame{
-	position:absolute;
-    top:80px;
-	height:100%;
-	width:100%;
-}
-
 
 .left {
-    float:left;
+    position:absolute;
     width:10%;
-    min-height:80%;
+    top:80px;
+    height:80%;
     border-right:1px solid #AAA;
 }
 
-.left ul{margin-top: 20px;}
-.left li{height:30px;display:block;padding-left: 20px;}
+.left_table{
+    margin: 20px auto auto 20px;
+    width:80%
+}
 
+.left_item {
+}
 
+.left_th{
+    margin: 20px auto auto auto;
+    border:1px solid #AAA;
+    width:100px;
+    height:30px;
+}
 
+.left_th_2{
+    margin: 20px auto auto auto;
+    border:1px solid #AAA;
+    width:100px;
+    height:22px;
+}
 
 .left_cur{
     background-color: #73938E;
 }
 
 .main {
-    margin-left:10%;
-    min-height:80%;
-	padding-left:5px;
+    position:absolute;
+    width:80%;
+    height:80%;
+    left:11%;
+    top:85px;
 }
 
-
+.main_iframe {
+    height: 100%;
+    width:100%;
+}
 
 a:link,a:visited {
     font-size:14px;
@@ -63,8 +71,8 @@ a:link,a:visited {
 
 .main_table {
     margin:20px 0px 0px 0px;
-    width:100%;
-    border:1px solid #AAA;
+    width:80%;
+    border:1px;
     align:center;
     cellpadding:3;
     cellspacing:1;
@@ -90,11 +98,11 @@ a:link,a:visited {
     border:1px solid #AAA;
 }
 
-.main_table tr{
+.main_tr{
     height:30px;
 }
 
-.main_table th{
+.main_tr > th{
     border:1px solid #AAA;
 }
 
