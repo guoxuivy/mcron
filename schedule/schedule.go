@@ -1,10 +1,11 @@
 package schedule
 
 import (
-	"github.com/jakecoffman/cron"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/jakecoffman/cron"
 )
 
 //任务管理
@@ -65,5 +66,6 @@ func (this *ScheduleManager) Run() {
 	go this.monitor()
 	this.Start()
 	log.Println("任务调度开启")
-	this.AddJob(1, "0/5 * * * * ?")
+	this.AddJob(2, "0/5 * * * * ?")
+	log.Println("任务调度开启ww")
 }

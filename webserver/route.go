@@ -13,6 +13,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("admin_name")
 	if err != nil || cookie.Value == "" {
 		http.Redirect(w, r, "/login/index", http.StatusFound)
+		return
 	}
 
 	pathInfo := strings.Trim(r.URL.Path, "/")
@@ -21,7 +22,6 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	if len(parts) > 1 {
 		action = strings.Title(parts[1]) + "Action"
 	}
-
 	admin := &adminController{}
 	controller := reflect.ValueOf(admin)
 	method := controller.MethodByName(action)
@@ -30,8 +30,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	requestValue := reflect.ValueOf(r)
 	responseValue := reflect.ValueOf(w)
+	log.Println(cookie.Value)
 	userValue := reflect.ValueOf(cookie.Value)
 	method.Call([]reflect.Value{responseValue, requestValue, userValue})
+
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
