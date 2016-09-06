@@ -1,9 +1,8 @@
-package mwork
+package mcron
 
 import (
-	"mwork/schedule"
-	"mwork/webserver"
-	//"time"
+	"github.com/guoxuivy/mcron/schedule"
+	"github.com/guoxuivy/mcron/webserver"
 )
 
 //服务端程序
