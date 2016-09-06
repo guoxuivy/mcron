@@ -67,5 +67,4 @@ func (this *ScheduleManager) Run() {
 	this.Start()
 	log.Println("任务调度开启")
 	this.AddJob(2, "0/5 * * * * ?")
-	log.Println("任务调度开启ww")
 }

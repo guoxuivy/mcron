@@ -61,7 +61,7 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login/index", http.StatusFound)
 	}
 
-	t, err := template.ParseFiles("template/html/404.html")
+	t, err := template.ParseFiles(TMP_DIR + "/html/404.html")
 	if err != nil {
 		log.Println(err)
 	}

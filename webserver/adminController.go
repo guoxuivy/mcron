@@ -14,7 +14,7 @@ type adminController struct {
 }
 
 func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request, user string) {
-	t, err := template.ParseFiles("template/html/admin/index.html")
+	t, err := template.ParseFiles(TMP_DIR + "/html/admin/index.html")
 	if err != nil {
 		log.Println(err)
 	}

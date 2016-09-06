@@ -10,7 +10,7 @@ type loginController struct {
 }
 
 func (this *loginController) IndexAction(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("template/html/login/index.html")
+	t, err := template.ParseFiles(TMP_DIR + "/html/login/index.html")
 	if err != nil {
 		log.Println(err)
 	}
