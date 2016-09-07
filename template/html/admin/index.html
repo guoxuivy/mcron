@@ -7,10 +7,27 @@
         <script type="text/javascript" src="/js/jquery.js" ></script>
     </head>
     <body>
+	
         <div class="head">
             <div class="head_left"><h1>管理后台</h1></div>
             <div class="head_right">欢迎登陆，管理员：{{.UserName}}|<a id="logout" href="#">退出系统</a></div>
         </div>
-        <div>欢迎登陆管理后台首页</div>
+		<div class=main_frame>
+			<div class="left"></div>
+			<div class="main">
+				<div>欢迎登陆管理后台首页</div>
+				<table class="main_table">
+					<thead><tr><th>任务号</th><th>任务规则</th><th>任务说明</th></tr></thead>
+					<tbody>
+					{{with .List}}  
+		            {{range .}}  
+					<tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Desc}}</td></tr>
+		            {{end}}  
+		        	{{end}}
+					</tbody>
+				</table>
+			</div>
+		</div>
     </body>
 </html>
+<script type="text/javascript" src="/js/base.js" ></script>
