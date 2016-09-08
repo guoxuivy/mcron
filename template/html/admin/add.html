@@ -1,0 +1,21 @@
+{{template "layout" .}}
+{{define "main"}}
+<div>任务添加</div>
+                
+<form data-type="formAction" action="/admin/add" form-rediret="/admin/index">
+    <table>
+        <tr>
+            <td>任务ID</td><td><input type="text" name="id"></input></td>
+        </tr>
+        <tr>
+            <td>任务规则</td><td><input type="text" name="scheduleExpr"></input> (0/5 * * * * ?) </td>
+        </tr>
+        <tr>
+            <td>任务说明</td><td><input type="text" name="desc"></input></td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="提交" style="width:100px;height:25px"></input></td>
+        </tr>
+    </table>
+</form>
+{{end}}

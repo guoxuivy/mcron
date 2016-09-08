@@ -1,7 +1,5 @@
 package mcron
 
-import ()
-
 //服务端程序
 type ServerClass struct {
 	//任务调度中心
@@ -18,11 +16,7 @@ func (this *ServerClass) GetSchedule() *ScheduleManager {
 	return this.schedule
 }
 
-func (this *ServerClass) AddJob(id int, scheduleExpr string) {
-	this.schedule.AddJob(id, scheduleExpr)
-}
-
-func (this *ServerClass) ListJob() []Job {
+func (this *ServerClass) ListJob() CurrJob {
 	return this.schedule.GetJobs()
 }
 

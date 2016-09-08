@@ -1,4 +1,4 @@
-body{margin:0}
+body, ul, li{margin:0;padding:0}
 .head {
     position:absolute;
     width:100%;
@@ -14,7 +14,9 @@ body{margin:0}
 .head_right {
     position:absolute;
     left:70%;
-    height: 70px;
+    width: 30%;
+    padding-top: 30px;
+    text-align: right;
 }
 
 .main_frame{
@@ -32,27 +34,11 @@ body{margin:0}
     border-right:1px solid #AAA;
 }
 
-.left_table{
-    margin: 20px auto auto 20px;
-    width:80%
-}
+.left ul{margin-top: 20px;}
+.left li{height:30px;display:block;padding-left: 20px;}
 
-.left_item {
-}
 
-.left_th{
-    margin: 20px auto auto auto;
-    border:1px solid #AAA;
-    width:100px;
-    height:30px;
-}
 
-.left_th_2{
-    margin: 20px auto auto auto;
-    border:1px solid #AAA;
-    width:100px;
-    height:22px;
-}
 
 .left_cur{
     background-color: #73938E;
