@@ -1,17 +1,11 @@
 package mcron
 
 import (
-	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
 )
 
-type Result struct {
-	Ret    int
-	Reason string
-	Data   interface{}
-}
 type loginController struct {
 }
 
@@ -45,14 +39,4 @@ func (this *loginController) LoginAction(w http.ResponseWriter, r *http.Request)
 	http.SetCookie(w, &cookie)
 	OutputJson(w, 1, "操作成功", nil)
 	return
-}
-
-//ajax 返回
-func OutputJson(w http.ResponseWriter, ret int, reason string, i interface{}) {
-	out := &Result{ret, reason, i}
-	b, err := json.Marshal(out)
-	if err != nil {
-		return
-	}
-	w.Write(b)
 }
