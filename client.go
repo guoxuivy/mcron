@@ -33,10 +33,10 @@ func (this *ClientClass) Listen(listen *net.TCPListener) {
 	for {
 		conn, err := listen.AcceptTCP()
 		if err != nil {
-			log.Println("接受客户端连接异常:", err.Error())
+			log.Println("client:接受客户端连接异常:", err.Error())
 			continue
 		}
-		log.Println("收到调度服务器指令:", conn.RemoteAddr().String())
+		log.Println("client:收到调度服务器指令:", conn.RemoteAddr().String())
 		defer conn.Close()
 		go func() {
 			//data := make([]byte, 1024)
@@ -45,7 +45,7 @@ func (this *ClientClass) Listen(listen *net.TCPListener) {
 				log.Println("读取指令数据错误:", err.Error())
 				return
 			}
-			log.Println(" 收到——————指令数据:", string(result))
+			log.Println("client:收到服务器指令数据:", string(result))
 			this.Worker(string(result))
 			//conn.Write([]byte(msg))
 		}()
@@ -62,7 +62,7 @@ func (this *ClientClass) _sendMsg(desc string) {
 	}
 	defer conn.Close()
 	conn.Write([]byte(desc))
-	log.Println("处理任务完成：" + desc)
+	log.Println("client:处理任务完成：" + desc)
 }
 
 //处理指令 返回处理结果
