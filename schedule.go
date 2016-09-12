@@ -35,7 +35,7 @@ func NewScheduleManager() *ScheduleManager {
 func (this *ScheduleManager) Start() {
 	//开启定时任务服务
 	this.cronJob.Start()
-
+	SheduleWorkerRun()
 }
 
 func (this *ScheduleManager) Stop() {
@@ -68,7 +68,7 @@ func (this *ScheduleManager) RemoveJob(id int) {
 
 //任务分发执行
 func (this *ScheduleManager) _scheduleActive(id int) {
-	log.Println("server:start-任务开始执行-任务ID", id)
+	log.Println("server:任务开始执行-任务ID ******start****", id)
 	job := this.currentJobs[id]
 	go sWorker.sendJob(job)
 }

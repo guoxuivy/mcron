@@ -26,6 +26,11 @@ func NewscheduleWorker() *scheduleWorker {
 	return worker
 }
 
+func SheduleWorkerRun() {
+	sWorker := NewscheduleWorker()
+	go sWorker._clientListen() //启动job反馈侦听
+}
+
 /**
  * 数据库连接
  */
@@ -50,7 +55,8 @@ func (this *scheduleWorker) getDb() (*sql.DB, error) {
 func (this *scheduleWorker) sendJob(job Job) {
 	//根据任务配置分发到相应客户端执行
 	//读取客户端配置id
-	conn, err := net.Dial("tcp", "127.0.0.1:4444")
+	//conn, err := net.Dial("tcp", "127.0.0.1:4444")
+	conn, err := net.DialTimeout("tcp", "192.168.51.125:4444", time.Second*2)
 	if err != nil {
 		log.Println("连接客户端端失败:", err.Error())
 		return
@@ -64,7 +70,7 @@ func (this *scheduleWorker) sendJob(job Job) {
 //job返回结果处理 需要定义一套标准返回协议
 func (this *scheduleWorker) backJob(res string) {
 	time.Sleep(time.Second * 1)
-	log.Println("server: 收到任务反馈数据:", res)
+	log.Println("server:收到任务反馈数据:", res)
 }
 
 //job执行反馈侦听
@@ -92,11 +98,4 @@ func (this *scheduleWorker) _clientListen() {
 			this.backJob(string(result))
 		}()
 	}
-}
-
-var sWorker *scheduleWorker
-
-func init() {
-	sWorker = NewscheduleWorker()
-	go sWorker._clientListen() //启动job反馈侦听
 }
