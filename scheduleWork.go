@@ -26,9 +26,8 @@ func NewscheduleWorker() *scheduleWorker {
 	return worker
 }
 
-func SheduleWorkerRun() {
-	sWorker := NewscheduleWorker()
-	go sWorker._clientListen() //启动job反馈侦听
+func (this *scheduleWorker) Start() {
+	go this._clientListen() //启动job反馈侦听
 }
 
 /**
@@ -48,7 +47,6 @@ func (this *scheduleWorker) getDb() (*sql.DB, error) {
 		}
 	}
 	return this.db, nil
-
 }
 
 //向客户端发送任务
