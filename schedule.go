@@ -37,7 +37,6 @@ func NewScheduleManager() *ScheduleManager {
 func (this *ScheduleManager) Start() {
 	//开启定时任务服务
 	this.cronJob.Start()
-	this.sWorker.Start()
 }
 
 func (this *ScheduleManager) Stop() {
@@ -76,7 +75,7 @@ func (this *ScheduleManager) _scheduleActive(id int) {
 }
 
 //节点、配置心跳监听（待实现 或者直接使用zookeeper）
-func (this *ScheduleManager) monitor() {
+func (this *ScheduleManager) Monitor() {
 	go func() {
 		ticker := time.NewTicker(time.Second)
 		for {
@@ -87,8 +86,8 @@ func (this *ScheduleManager) monitor() {
 }
 
 func (this *ScheduleManager) Run() {
-	this.monitor() //异步函数
+	this.Monitor() //异步函数
 	this.Start()
+	this.sWorker.Start()
 	log.Println("任务调度开启")
-	//this.AddJob(2, "0/5 * * * * ?")
 }
