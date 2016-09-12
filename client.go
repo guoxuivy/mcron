@@ -9,7 +9,9 @@ import (
 
 //客户端配置
 const (
-	ip   = ""
+	//服务器地址
+	serverHost = "192.168.37.146:3333"
+	//客户端使用端口
 	port = 4444
 )
 
@@ -17,9 +19,9 @@ const (
 type ClientClass struct {
 }
 
-//服务开启流程
+//客户端开启流程
 func (this *ClientClass) run() {
-	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(ip), port, ""})
+	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(""), port, ""})
 	if err != nil {
 		log.Println("监听端口失败:", err.Error())
 		return
@@ -55,7 +57,8 @@ func (this *ClientClass) Listen(listen *net.TCPListener) {
 //向服务器发送数据
 func (this *ClientClass) _sendMsg(desc string) {
 	//读取客户端配置id
-	conn, err := net.Dial("tcp", "127.0.0.1:3333")
+	//conn, err := net.Dial("tcp", "127.0.0.1:3333")
+	conn, err := net.Dial("tcp", serverHost)
 	if err != nil {
 		log.Println("连接服务端端失败:", err.Error())
 		return
