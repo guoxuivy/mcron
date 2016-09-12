@@ -4,15 +4,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"strconv"
 	"time"
 )
 
 //客户端配置
 const (
 	//服务器地址
-	serverHost = "192.168.37.146:3333"
-	//客户端使用端口
-	port = 4444
+	SERVER_IP = "192.168.37.146"
 )
 
 //客户端程序
@@ -21,7 +20,8 @@ type ClientClass struct {
 
 //客户端开启流程
 func (this *ClientClass) run() {
-	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(""), port, ""})
+	//监听本地任务消息
+	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(""), C_PORT, ""})
 	if err != nil {
 		log.Println("监听端口失败:", err.Error())
 		return
@@ -49,7 +49,6 @@ func (this *ClientClass) Listen(listen *net.TCPListener) {
 			}
 			log.Println("client:收到服务器指令数据:", string(result))
 			this.Worker(string(result))
-			//conn.Write([]byte(msg))
 		}()
 	}
 }
@@ -57,8 +56,7 @@ func (this *ClientClass) Listen(listen *net.TCPListener) {
 //向服务器发送数据
 func (this *ClientClass) _sendMsg(desc string) {
 	//读取客户端配置id
-	//conn, err := net.Dial("tcp", "127.0.0.1:3333")
-	conn, err := net.Dial("tcp", serverHost)
+	conn, err := net.Dial("tcp", SERVER_IP+":"+strconv.Itoa(S_PORT))
 	if err != nil {
 		log.Println("连接服务端端失败:", err.Error())
 		return

@@ -7,7 +7,7 @@ type ServerClass struct {
 }
 
 //服务开启流程
-func (this *ServerClass) run() {
+func (this *ServerClass) Start() {
 	this.schedule.Run() //开启任务调度
 	go StartClient()    //开启自身任务处理客户端 如没有可不开启
 	WebRun()            //开启web服务 阻塞式
@@ -28,6 +28,5 @@ func StartServer() {
 	Server = &ServerClass{
 		schedule: NewScheduleManager(),
 	}
-	Server.run()
-
+	Server.Start()
 }
