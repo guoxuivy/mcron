@@ -3,24 +3,35 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>登陆页面</title>
-        <link rel="stylesheet" type="text/css" href="/css/main.css" />
+        <link rel="stylesheet" type="text/css" href="/css/login.css" />
         <script type="text/javascript" src="/js/jquery.js" ></script>
     </head>
     <body>
-        <h1>登陆页面</h1>
-        <form data-type="formAction" action="/login/login" form-rediret="/admin/index">
-            <table>
-                <tr>
-                <td>用户名</td><td><input type="text" name="admin_name"></input></td>
-                </tr>
-                <tr>
-                <td>密码</td><td><input type="password" name="admin_password"></input></td>
-                </tr>
-                <tr>
-                    <td><input type="submit" value="登陆" style="width:100px;height:25px"></input></td>
-                </tr>
-            </table>
-        </form>
+		
+		<div class="content">
+	        <div class="panel">
+			<form data-type="formAction" action="/login/login" form-rediret="/admin/index">
+	            <div class="group">
+	                <label>账号</label>
+	                <input name="admin_name" placeholder="请输入账号">
+	                
+	            </div>
+	            <div class="group">
+	                <label>密码</label>
+	                <input name="admin_password" placeholder="请输入密码" type="password">
+	            </div>
+	
+	            <!--  登录按钮    -->
+	            <div class="login">
+	                <button>登录</button>
+	            </div>
+	        </form>
+			</div>
+	        <!--  注册按钮    -->
+	        <!--<div class="register">
+	            <button>创建新账号</button>
+	        </div>-->
+    	</div>
     </body>
     <script type="text/javascript" src="/js/base.js" ></script>
 </html>

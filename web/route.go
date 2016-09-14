@@ -1,4 +1,4 @@
-package mcron
+package web
 
 import (
 	"html/template"

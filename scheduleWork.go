@@ -1,20 +1,14 @@
 package mcron
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
 	"strconv"
 	"time"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
-	MYSQL_DSN string = "root:root@tcp(127.0.0.1:3306)/mwork?charset=utf8"
 	//服务端port 11510
 	//客户端port 11511
 	S_PORT int = 11510
@@ -23,35 +17,10 @@ const (
 
 //任务调度执行者
 type scheduleWorker struct {
-	db *sql.DB
-}
-
-func NewscheduleWorker() *scheduleWorker {
-	worker := &scheduleWorker{}
-	return worker
 }
 
 func (this *scheduleWorker) Start() {
 	go this._clientListen() //启动job反馈侦听
-}
-
-/**
- * 数据库连接
- */
-func (this *scheduleWorker) getDb() (*sql.DB, error) {
-	if this.db == nil {
-		db, _ := sql.Open("mysql", MYSQL_DSN)
-		db.SetMaxOpenConns(200)
-		db.SetMaxIdleConns(100)
-		err := db.Ping()
-		if err != nil {
-			err = errors.New("数据库连接错误," + fmt.Sprint(MYSQL_DSN))
-			return nil, err
-		} else {
-			this.db = db
-		}
-	}
-	return this.db, nil
 }
 
 //向客户端发送任务
@@ -59,7 +28,8 @@ func (this *scheduleWorker) sendJob(job Job) {
 	//根据任务配置分发到相应客户端执行
 	//读取客户端配置id
 	//conn, err := net.Dial("tcp", "127.0.0.1:4444")
-	clientIp := "192.168.51.125"
+	//clientIp := "192.168.51.125"
+	clientIp := "127.0.0.1"
 	conn, err := net.DialTimeout("tcp", clientIp+":"+strconv.Itoa(C_PORT), time.Second*2)
 	if err != nil {
 		log.Println("连接客户端端失败:", err.Error())
