@@ -22,7 +22,6 @@ func NewScheduleJob(_id int, _job SchduleActiveCallback) *ScheduleJob {
 
 //执行入口
 func (this *ScheduleJob) Run() {
-	//log.Println("Invalid callback")
 	if nil != this.callback {
 		this.callback(this.id)
 	} else {

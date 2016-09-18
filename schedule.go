@@ -11,22 +11,27 @@ import (
 
 type CurrJob map[int]Job
 
+//任务在线处理管道
+type jobActiveChan map[string]chan string
+
 //任务管理
 type ScheduleManager struct {
-	addJobChan    chan string //添加任务管道采用json字符串
-	removeJobChan chan string //删除任务管道采用json字符串（待实现）
-	stopJobChan   chan string //暂停任务管道采用json字符串（待实现）
-	startJobChan  chan string //开启任务管道采用json字符串（待实现）
-
 	currentJobs CurrJob         //当前正在执行的任务id列表
 	cronJob     *cron.Cron      //周期任务驱动型任务
 	sWorker     *scheduleWorker //事件任务驱动型日任务
 	jobModel    *jobModel       //数据库操作类
+	jobChan     map[string]chan string
 }
 
 func NewScheduleManager() *ScheduleManager {
+	chans := jobActiveChan{
+		"add":    make(chan string, 10),
+		"remove": make(chan string, 10),
+		"stop":   make(chan string, 10),
+		"start":  make(chan string, 10),
+	}
 	instance := &ScheduleManager{}
-	instance.addJobChan = make(chan string, 10)
+	instance.jobChan = chans
 	instance.cronJob = cron.New()
 	instance.currentJobs = make(map[int]Job)
 	instance.sWorker = &scheduleWorker{}
@@ -95,13 +100,21 @@ func (this *ScheduleManager) Monitor() {
 		}
 	}()
 
-	//任务添加管道监听
+	//前台任务操作管道监听
 	go func() {
 		for {
-			var job Job
-			jobstr := <-this.addJobChan
-			if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
-				this.AddJob(job)
+			select {
+			case jobstr := <-this.jobChan["add"]:
+				var job Job
+				if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
+					this.AddJob(job)
+				}
+			case jobid := <-this.jobChan["remove"]:
+				log.Println(jobid)
+			case jobid := <-this.jobChan["stop"]:
+				log.Println(jobid)
+			case jobid := <-this.jobChan["start"]:
+				log.Println(jobid)
 			}
 		}
 	}()
