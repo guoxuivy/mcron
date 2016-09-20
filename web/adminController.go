@@ -89,7 +89,7 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 
 		if b, err := json.Marshal(job); err == nil {
 			str := string(b)
-			jobChan <- str
+			jobChan["add"] <- str
 		}
 
 		msg := "ok"
