@@ -29,6 +29,9 @@ func NewScheduleManager() *ScheduleManager {
 		"remove": make(chan string, 10),
 		"stop":   make(chan string, 10),
 		"start":  make(chan string, 10),
+
+		"job_search": make(chan string, 1), //web 当前任务查询请求
+		"job_list":   make(chan string, 1), //web 当前任务查询结果返回 json 传送
 	}
 	instance := &ScheduleManager{}
 	instance.jobChan = chans
@@ -115,6 +118,17 @@ func (this *ScheduleManager) Monitor() {
 				log.Println(jobid)
 			case jobid := <-this.jobChan["start"]:
 				log.Println(jobid)
+			case <-this.jobChan["job_search"]:
+				//非阻塞式
+				go func() {
+					ids := []int{}
+					for id, _ := range this.currentJobs {
+						ids = append(ids, id)
+					}
+					if b, err := json.Marshal(ids); err == nil {
+						this.jobChan["job_list"] <- string(b)
+					}
+				}()
 			}
 		}
 	}()
