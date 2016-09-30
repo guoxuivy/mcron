@@ -36,9 +36,10 @@ func (this *scheduleWorker) sendJob(job Job) {
 		return
 	}
 	defer conn.Close()
-	daytime := time.Now().String() + job.Desc
-	conn.Write([]byte(daytime))
-	log.Println("server:向客户端发送任务成功：任务ID", job.Id, daytime)
+	//daytime := time.Now().String() + job.Desc
+	shell := job.Shell
+	conn.Write([]byte(shell))
+	log.Println("server:向客户端发送任务成功：任务ID", job.Id, shell)
 }
 
 //job返回结果处理 需要定义一套标准返回协议

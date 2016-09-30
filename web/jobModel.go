@@ -41,6 +41,7 @@ type Job struct {
 	Id           int
 	ScheduleExpr string
 	Desc         string
+	Shell        string
 }
 
 type jobModel struct{}
@@ -53,7 +54,7 @@ func (this *jobModel) getList() map[int]Job {
 	} else {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
-			jobs[id] = Job{id, v["schedule_expr"], v["desc"]}
+			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"]}
 		}
 	}
 	return jobs

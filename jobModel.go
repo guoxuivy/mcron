@@ -41,6 +41,7 @@ type Job struct {
 	Id           int
 	ScheduleExpr string
 	Desc         string
+	Shell        string
 }
 
 type jobModel struct{}
@@ -52,9 +53,9 @@ func (this *jobModel) Add(j Job) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	stmt, _ := db.Prepare("INSERT INTO `job_list` (`schedule_expr`, `desc`, `shell`,`status`) VALUES (?,?,'',1)")
+	stmt, _ := db.Prepare("INSERT INTO `job_list` (`schedule_expr`, `desc`, `shell`,`status`) VALUES (?,?,?,1)")
 	defer stmt.Close()
-	res, err := stmt.Exec(j.ScheduleExpr, j.Desc)
+	res, err := stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell)
 	if err != nil {
 		return 0, err
 	}
@@ -73,7 +74,7 @@ func (this *jobModel) getList() map[int]Job {
 	} else {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
-			jobs[id] = Job{id, v["schedule_expr"], v["desc"]}
+			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"]}
 		}
 	}
 	return jobs

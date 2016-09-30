@@ -44,8 +44,10 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 	} else {
 		scheduleExpr := r.FormValue("scheduleExpr")
 		desc := r.FormValue("desc")
+		shell := r.FormValue("shell")
+
 		//msg := Server.GetSchedule().AddJob(id, scheduleExpr, desc)
-		job := &Job{0, scheduleExpr, desc}
+		job := &Job{0, scheduleExpr, desc, shell}
 		if b, err := json.Marshal(job); err == nil {
 			str := string(b)
 			jobChan["add"] <- str

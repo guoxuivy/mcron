@@ -4,8 +4,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os/exec"
+	"runtime"
 	"strconv"
-	"time"
+	"strings"
+	//"time"
 )
 
 //客户端配置
@@ -68,13 +71,38 @@ func (this *ClientClass) _sendMsg(desc string) {
 
 //处理指令 返回处理结果
 func (this *ClientClass) Worker(shell string) {
-	time.Sleep(time.Second * 1)
-	this._sendMsg("done")
+	//time.Sleep(time.Second * 1)
+	res := this._execCommand(shell)
+	//执行结果日志记录在本地，向调度中心返回执行结果即可
+	this._sendMsg("done:" + res)
+}
+
+/**
+ * 执行系统命令封装
+ * 多个参数以空格分割
+ * execCommand("ping baidu.com -n 3")
+ */
+func (this *ClientClass) _execCommand(shell string) string {
+	params := strings.Split(shell, " ")
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		params = append([]string{"/C"}, params...)
+		cmd = exec.Command("cmd", params...)
+	} else {
+		command := params[0]
+		params = params[1:]
+		cmd = exec.Command(command, params...)
+	}
+	out, err := cmd.Output()
+	if err != nil {
+		log.Println(err)
+	}
+	return string(out)
 }
 
 var Client *ClientClass
 
-//创建服务器
+//创建客户端
 func StartClient() {
 	Client = &ClientClass{}
 	Client.run()
