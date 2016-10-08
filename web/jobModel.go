@@ -49,9 +49,7 @@ type jobModel struct{}
 func (this *jobModel) getList() map[int]Job {
 	jobs := make(map[int]Job)
 	res := this.findAll()
-	if res == nil {
-		log.Println("empty")
-	} else {
+	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
 			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"]}
