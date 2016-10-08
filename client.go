@@ -4,11 +4,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
-	//"time"
+	"time"
 )
 
 //客户端配置
@@ -23,18 +24,17 @@ type ClientClass struct {
 
 //客户端开启流程
 func (this *ClientClass) run() {
-	//监听本地任务消息
+	this.Listen()
+}
+
+//监听来自调度服务器的指令
+func (this *ClientClass) Listen() {
 	listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(""), C_PORT, ""})
 	if err != nil {
 		log.Println("监听端口失败:", err.Error())
 		return
 	}
 	log.Println("客户端连接已初始化，等待调度指令...")
-	this.Listen(listen)
-}
-
-//监听来自调度服务器的指令
-func (this *ClientClass) Listen(listen *net.TCPListener) {
 	for {
 		conn, err := listen.AcceptTCP()
 		if err != nil {
@@ -72,9 +72,10 @@ func (this *ClientClass) _sendMsg(desc string) {
 //处理指令 返回处理结果
 func (this *ClientClass) Worker(shell string) {
 	//time.Sleep(time.Second * 1)
-	res := this._execCommand(shell)
+	log := this._execCommand(shell)
 	//执行结果日志记录在本地，向调度中心返回执行结果即可
-	this._sendMsg("done:" + res)
+	go this.WriteLog("shell_run", "["+time.Now().Format("2006-01-02 15:04:05")+"] run ["+shell+"] out: "+log)
+	this._sendMsg("done")
 }
 
 /**
@@ -98,6 +99,23 @@ func (this *ClientClass) _execCommand(shell string) string {
 		log.Println(err)
 	}
 	return string(out)
+}
+
+/**
+ * 升级日志写入  文件追加
+ * @param  {[type]} log string        [description]
+ * @return {[type]}     [description]
+ */
+func (this *ClientClass) WriteLog(tag string, data string) {
+	str_time := time.Now().Format("2006_01_02")
+	filename := tag + "_" + str_time + ".log"
+	fl, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	defer fl.Close()
+	fl.WriteString(data)
+	fl.WriteString("\r\n")
 }
 
 var Client *ClientClass
