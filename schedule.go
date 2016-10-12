@@ -64,7 +64,6 @@ func (this *ScheduleManager) GetJobs() CurrJob {
 
 //写库添加任务
 func (this *ScheduleManager) AddJob(j Job) {
-	//写入数据库
 	id, err := this.jobModel.Add(j)
 	if err != nil {
 		log.Println(err.Error())
@@ -94,16 +93,21 @@ func (this *ScheduleManager) _scheduleActive(id int) {
 	go this.sWorker.sendJob(job)
 }
 
-//节点、配置心跳监听（待实现 或者直接使用zookeeper）
+/**
+ * 服务端监听 包括（客户端消息、客户端配置、客户端心跳等）或者直接使用zookeeper
+ * @param
+ * @return
+ */
 func (this *ScheduleManager) Monitor() {
 	go func() {
+		//心跳（每秒）
 		ticker := time.NewTicker(time.Second)
 		for {
 			<-ticker.C
 		}
 	}()
 
-	//前台任务操作管道监听
+	//web前台任务操作管道监听
 	go func() {
 		for {
 			select {
