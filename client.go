@@ -30,7 +30,7 @@ func (this *ClientClass) run() {
 
 //客户端注册流程
 func (this *ClientClass) register() {
-	conn, err := net.Dial("tcp", SERVER_IP+":"+strconv.Itoa(S_PORT))
+	conn, err := net.DialTimeout("tcp", SERVER_IP+":"+strconv.Itoa(S_PORT), time.Second*3)
 	if err != nil {
 		log.Println("连接服务端端失败:", err.Error())
 		return
