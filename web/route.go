@@ -30,14 +30,14 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	requestValue := reflect.ValueOf(r)
 	responseValue := reflect.ValueOf(w)
-	log.Println(cookie.Value)
+	//log.Println(cookie.Value)
 	userValue := reflect.ValueOf(cookie.Value)
 	method.Call([]reflect.Value{responseValue, requestValue, userValue})
 
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("loginHandler")
+	//log.Println("loginHandler")
 	pathInfo := strings.Trim(r.URL.Path, "/")
 	parts := strings.Split(pathInfo, "/")
 	var action = ""

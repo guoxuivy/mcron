@@ -49,7 +49,7 @@ type jobModel struct{}
 
 func (this *jobModel) getList() map[int]Job {
 	jobs := make(map[int]Job)
-	res := this.findAll()
+	res, _ := this.findAll()
 	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
@@ -70,18 +70,53 @@ func (this *jobModel) getShell(id int) string {
 	return shell
 }
 
-//通用列表查询
-func (this *jobModel) findAll() map[int]map[string]string {
+//修改任务
+func (this *jobModel) edit(j Job) error {
 	db, err := getDb()
 	if err != nil {
-		log.Println(err.Error())
-		return nil
+		return err
+	}
+
+	stmt, err := db.Prepare("UPDATE `job_list` SET `schedule_expr`=?, `desc`=?, `shell`=?, `ip`=? WHERE `id` = ?")
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+	_, err = stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell, j.IP, strconv.Itoa(j.Id))
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (this *jobModel) getOne(id int) Job {
+	db, err := getDb()
+	var job Job
+	one, err := db.Query("SELECT `id`, `schedule_expr`, `desc`, `shell`, `ip` FROM `job_list` WHERE `id` = ? ", id)
+	if err != nil {
+		log.Println(err)
+	}
+	defer one.Close()
+	for one.Next() {
+		err := one.Scan(&job.Id, &job.ScheduleExpr, &job.Desc, &job.Shell, &job.IP)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return job
+}
+
+//通用列表查询
+func (this *jobModel) findAll() (map[int]map[string]string, error) {
+	db, err := getDb()
+	if err != nil {
+		return nil, err
 	}
 	//查询数据库
 	query, err := db.Query("SELECT * FROM `job_list` WHERE `status` = ? ", 1)
 	if err != nil {
-		log.Println("查询数据库失败", err.Error())
-		return nil
+		return nil, err
 	}
 	defer query.Close()
 
@@ -99,21 +134,18 @@ func (this *jobModel) findAll() map[int]map[string]string {
 	//最后得到的map
 	results := make(map[int]map[string]string)
 	i := 0
-	for query.Next() { //循环，让游标往下推
-		if err := query.Scan(scans...); err != nil { //query.Scan查询出来的不定长值放到scans[i] = &values[i],也就是每行都放在values里
-			log.Println(err)
-			return nil
+	for query.Next() {
+		//query.Scan查询出来的不定长值放到scans[i] = &values[i],也就是每行都放在values里
+		if err := query.Scan(scans...); err != nil {
+			return nil, err
 		}
-
 		row := make(map[string]string) //每行数据
-
-		for k, v := range values { //每行数据是放在values里面，现在把它挪到row里
+		for k, v := range values {     //每行数据是放在values里面，现在把它挪到row里
 			key := cols[k]
 			row[key] = string(v)
 		}
 		results[i] = row //装入结果集中
 		i++
 	}
-
-	return results
+	return results, nil
 }

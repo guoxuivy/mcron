@@ -9,13 +9,14 @@ import (
 
 //ajax标准输出
 type Result struct {
-	Ret    int //  0/1
-	Reason string
-	Data   interface{}
+	Code int //  200/400
+	Msg  string
+	Data interface{}
 }
 
 //ajax 返回
 func OutputJson(w http.ResponseWriter, ret int, reason string, i interface{}) {
+	w.Header().Set("content-type", "application/json")
 	out := &Result{ret, reason, i}
 	b, err := json.Marshal(out)
 	if err != nil {

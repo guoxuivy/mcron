@@ -45,7 +45,7 @@ type Job struct {
 	IP           string
 }
 
-//任务描述
+//任务日志
 type JobLog struct {
 	Id         int
 	JobId      int
@@ -83,7 +83,10 @@ func (this *jobModel) AddLog(log JobLog) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	stmt, _ := db.Prepare("INSERT INTO `job_log` (`job_id`, `action`, `log`) VALUES (?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO `job_log` (`job_id`, `action`, `log`) VALUES (?,?,?)")
+	if err != nil {
+		return 0, err
+	}
 	defer stmt.Close()
 	res, err := stmt.Exec(log.JobId, log.Action, log.Log)
 	if err != nil {
@@ -96,16 +99,16 @@ func (this *jobModel) AddLog(log JobLog) (int, error) {
 	return int(id), err
 }
 
-func (this *jobModel) getList() map[int]Job {
+func (this *jobModel) getList() (map[int]Job, error) {
 	jobs := make(map[int]Job)
-	res := this.findAll()
+	res, err := this.findAll()
 	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
 			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"], v["ip"]}
 		}
 	}
-	return jobs
+	return jobs, err
 }
 
 func (this *jobModel) getOne(id int) Job {
@@ -126,17 +129,15 @@ func (this *jobModel) getOne(id int) Job {
 }
 
 //通用列表查询
-func (this *jobModel) findAll() map[int]map[string]string {
+func (this *jobModel) findAll() (map[int]map[string]string, error) {
 	db, err := getDb()
 	if err != nil {
-		log.Println(err.Error())
-		return nil
+		return nil, err
 	}
 	//查询数据库
 	query, err := db.Query("SELECT * FROM `job_list` WHERE `status` = ? ", 1)
 	if err != nil {
-		log.Println("查询数据库失败", err.Error())
-		return nil
+		return nil, err
 	}
 	defer query.Close()
 
@@ -154,15 +155,13 @@ func (this *jobModel) findAll() map[int]map[string]string {
 	//最后得到的map
 	results := make(map[int]map[string]string)
 	i := 0
-	for query.Next() { //循环，让游标往下推
-		if err := query.Scan(scans...); err != nil { //query.Scan查询出来的不定长值放到scans[i] = &values[i],也就是每行都放在values里
-			log.Println(err)
-			return nil
+	for query.Next() {
+		//query.Scan查询出来的不定长值放到scans[i] = &values[i],也就是每行都放在values里
+		if err := query.Scan(scans...); err != nil {
+			return nil, err
 		}
-
 		row := make(map[string]string) //每行数据
-
-		for k, v := range values { //每行数据是放在values里面，现在把它挪到row里
+		for k, v := range values {     //每行数据是放在values里面，现在把它挪到row里
 			key := cols[k]
 			row[key] = string(v)
 		}
@@ -170,5 +169,5 @@ func (this *jobModel) findAll() map[int]map[string]string {
 		i++
 	}
 
-	return results
+	return results, nil
 }

@@ -50,6 +50,10 @@ func (this *scheduleWorker) backJob(json map[string]interface{}) {
 	idstr := arr[0].(string)
 	err := arr[1].(string)
 	id, _ := strconv.Atoi(idstr)
+	if err == "error" {
+		log.Println("任务执行失败 ---", idstr)
+		//扩展监控警报处理
+	}
 	Server.Schedule.WriteLog(id, "job_run_back", err)
 }
 
@@ -70,7 +74,6 @@ func (this *scheduleWorker) _clientListen() {
 		conn, err := listen.AcceptTCP()
 		if err != nil {
 			log.Println("接受客户端连接异常:", err.Error())
-			//log.Println("接受客户端连接:", conn.RemoteAddr().String())
 			continue
 		}
 		defer conn.Close()
@@ -83,7 +86,6 @@ func (this *scheduleWorker) handleConn(conn net.Conn) {
 		var buf = make([]byte, 65536)
 		n, err := conn.Read(buf)
 		if err != nil {
-			//log.Println("read error:", err) //连接断开
 			break
 		}
 		if n > 0 {

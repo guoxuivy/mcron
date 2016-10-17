@@ -1,6 +1,7 @@
 package mcron
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net"
@@ -24,16 +25,20 @@ type ClientClass struct {
 
 //客户端开启流程
 func (this *ClientClass) run() {
-	this.register()
+	err := this.register()
+	if nil != err {
+		return
+	}
 	this.Listen()
 }
 
 //客户端注册流程
-func (this *ClientClass) register() {
+func (this *ClientClass) register() error {
+	time.Sleep(time.Millisecond * 100) //0.1s 等待服务端先启动
 	conn, err := net.DialTimeout("tcp", SERVER_IP+":"+strconv.Itoa(S_PORT), time.Second*3)
 	if err != nil {
-		log.Println("连接服务端端失败:", err.Error())
-		return
+		log.Println("注册失败:", err.Error())
+		return err
 	}
 	defer conn.Close()
 	conn.Write([]byte(`{"Action":"register","Param":["Param1","Param2"]}`))
@@ -44,9 +49,12 @@ func (this *ClientClass) register() {
 	if action == "register_back" {
 		res := jsonStr("Data", json)
 		log.Println("client:注册返回:", res)
-		return
+		if res != "ok" {
+			err = errors.New("注册失败")
+			return err
+		}
 	}
-
+	return nil
 }
 
 //监听来自调度服务器的指令
@@ -98,11 +106,14 @@ func (this *ClientClass) _sendMsg(id string, desc string) {
 
 //处理指令 返回处理结果
 func (this *ClientClass) Worker(id string, shell string) {
-	//time.Sleep(time.Second * 1)
-	log := this._execCommand(shell)
-	//执行结果日志记录在本地，向调度中心返回执行结果即可
-	go this.WriteLog("shell_run", "["+time.Now().Format("2006-01-02 15:04:05")+"] run ["+shell+"] out: "+log)
-	this._sendMsg(id, "done")
+	log, err := this._execCommand(shell)
+	if err != nil {
+		go this.WriteLog("shell_run", "["+time.Now().Format("2006-01-02 15:04:05")+"] run ["+shell+"] [error] out: "+err.Error())
+		this._sendMsg(id, "error")
+	} else {
+		go this.WriteLog("shell_run", "["+time.Now().Format("2006-01-02 15:04:05")+"] run ["+shell+"] out: "+log)
+		this._sendMsg(id, "done")
+	}
 }
 
 /**
@@ -110,7 +121,7 @@ func (this *ClientClass) Worker(id string, shell string) {
  * 多个参数以空格分割
  * execCommand("ping baidu.com -n 3")
  */
-func (this *ClientClass) _execCommand(shell string) string {
+func (this *ClientClass) _execCommand(shell string) (string, error) {
 	params := strings.Split(shell, " ")
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
@@ -123,9 +134,9 @@ func (this *ClientClass) _execCommand(shell string) string {
 	}
 	out, err := cmd.Output()
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }
 
 /**

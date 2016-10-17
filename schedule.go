@@ -51,7 +51,10 @@ func (this *ScheduleManager) Start() {
 	//开启定时任务服务
 	this.cronJob.Start()
 	//加载数据库任务
-	list := this.jobModel.getList()
+	list, err := this.jobModel.getList()
+	if err != nil {
+		panic("服务器启动失败：" + err.Error())
+	}
 	for _, job := range list {
 		this._addJob(job)
 	}

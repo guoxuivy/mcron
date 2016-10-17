@@ -1,14 +1,83 @@
 {{template "layout" .}}
 {{define "main"}}
-<div>欢迎登陆管理后台首页</div>
+<h2>当前任务列表</h2>
 <table class="main_table">
     <thead><tr><th>任务号</th><th>任务规则</th><th>执行命令</th><th>客户端IP</th><th>任务说明</th><th>操作</th></tr></thead>
     <tbody>
     {{with .List}}  
     {{range .}}  
-    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.IP}}</td><td>{{.Desc}}</td><td id="{{.Id}}"><button class="btn reload">重置</button></td></tr>
+    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.IP}}</td><td>{{.Desc}}</td><td id="{{.Id}}"><button class="btn reload">重置</button><button class="btn edit">修改</button></td></tr>
     {{end}}  
     {{end}}
     </tbody>
 </table>
 {{end}}
+
+
+<div class="panel none">
+<form class="edit_form" form-rediret="/admin/index">
+	<div class="group">
+	    <label>任务规则</label>
+	    <input name="scheduleExpr" type="text" value="">
+	</div>
+	<div class="group">
+	    <label>执行命令</label>
+	    <input name="shell" type="text" value="">
+	</div>
+	<div class="group">
+	    <label>客户端IP</label>
+	    <input name="ip" type="text" value="">
+	</div>
+	<div class="group">
+	    <label>任务说明</label>
+	    <input name="desc" type="text" value="">
+	</div>
+	<input name="id" type="hidden" value="">
+</form>	
+</div>
+
+<script type="text/javascript">
+$(function(){
+	$(".reload").click(function(){
+	    var id = $(this).parent().attr("id");
+	    $.post("/admin/reload", {id:id}, function(ret){
+	        alert(ret.Msg);
+	    },"json")
+	});
+	
+	$(".edit").click(function(){
+	    var id = $(this).parent().attr("id");
+		$.getJSON("/admin/One",{id:id}, function(json){
+			if(json.Code=="200"){
+				var row = json.Data
+				var d = Idialog({
+				    top:120,
+				    width:500,
+				    title:'修改',
+				    content:$(".panel"),
+					init:function(){
+						$("input[name='scheduleExpr']").val(row.ScheduleExpr)
+						$("input[name='shell']").val(row.Shell)
+						$("input[name='ip']").val(row.IP)
+						$("input[name='desc']").val(row.Desc)
+						$("input[name='id']").val(row.Id)
+					},
+				    ok:function(obj){
+						var form = obj._self.find(".edit_form");
+						$.post("/admin/edit", form.serialize(), function(ret){
+					        if(ret.Code == "200") {
+								location.href = form.attr("form-rediret");
+					        } else {
+					            alert(ret.Msg);
+					        }
+					    },"json")
+				    },
+				    cancel:true,
+				});
+			}
+		});
+		
+	});
+});
+
+</script>

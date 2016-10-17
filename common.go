@@ -43,8 +43,6 @@ func jsonStr(key string, m map[string]interface{}) string {
 func jsonArr(key string, m map[string]interface{}) []interface{} {
 	v := m[key]
 	switch vv := v.(type) {
-	case string:
-	case int:
 	case []interface{}:
 		return vv
 	default:

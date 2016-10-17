@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type User struct {
@@ -37,19 +38,18 @@ func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request,
 
 //重置任务
 func (this *adminController) ReloadAction(w http.ResponseWriter, r *http.Request, user string) {
-	w.Header().Set("content-type", "application/json")
 	err := r.ParseForm()
 	if err != nil {
-		OutputJson(w, 0, "参数错误", nil)
+		OutputJson(w, 400, "参数错误", nil)
 		return
 	}
 	id := r.FormValue("id")
 	jobChan["reload"] <- id
-	OutputJson(w, 1, "已重置此任务", nil)
+	OutputJson(w, 200, "已重置此任务", nil)
 	return
 }
 
-//添加任务
+//添加任务 (添加逻辑得重做 直接写库 通知chan)
 func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, user string) {
 	_id := r.FormValue("scheduleExpr")
 	if _id == "" {
@@ -67,7 +67,40 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 			jobChan["add"] <- str
 		}
 		msg := "ok"
-		OutputJson(w, 0, msg, nil)
+		OutputJson(w, 200, msg, nil)
+	}
+}
+
+//获取一条数据
+func (this *adminController) OneAction(w http.ResponseWriter, r *http.Request, user string) {
+	id_str := r.FormValue("id")
+	id, _ := strconv.Atoi(id_str)
+	model := &jobModel{}
+	row := model.getOne(id)
+	if row.Id > 0 {
+		OutputJson(w, 200, "ok", row)
+	} else {
+		OutputJson(w, 404, "无此数据！", nil)
+	}
+}
+
+//编辑一条数据
+func (this *adminController) EditAction(w http.ResponseWriter, r *http.Request, user string) {
+	scheduleExpr := r.FormValue("scheduleExpr")
+	desc := r.FormValue("desc")
+	shell := r.FormValue("shell")
+	ip := r.FormValue("ip")
+	id_str := r.FormValue("id")
+	id, _ := strconv.Atoi(id_str)
+
+	job := Job{id, scheduleExpr, desc, shell, ip}
+	model := &jobModel{}
+	err := model.edit(job)
+
+	if err != nil {
+		OutputJson(w, 400, "更新失败！", err)
+	} else {
+		OutputJson(w, 200, "更新成功！", nil)
 	}
 
 }
