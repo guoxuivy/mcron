@@ -35,6 +35,20 @@ func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request,
 	t.Execute(w, &Page{user, list})
 }
 
+//重置任务
+func (this *adminController) ReloadAction(w http.ResponseWriter, r *http.Request, user string) {
+	w.Header().Set("content-type", "application/json")
+	err := r.ParseForm()
+	if err != nil {
+		OutputJson(w, 0, "参数错误", nil)
+		return
+	}
+	id := r.FormValue("id")
+	jobChan["reload"] <- id
+	OutputJson(w, 1, "已重置此任务", nil)
+	return
+}
+
 //添加任务
 func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, user string) {
 	_id := r.FormValue("scheduleExpr")
@@ -45,9 +59,9 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 		scheduleExpr := r.FormValue("scheduleExpr")
 		desc := r.FormValue("desc")
 		shell := r.FormValue("shell")
+		ip := r.FormValue("ip")
 
-		//msg := Server.GetSchedule().AddJob(id, scheduleExpr, desc)
-		job := &Job{0, scheduleExpr, desc, shell}
+		job := &Job{0, scheduleExpr, desc, shell, ip}
 		if b, err := json.Marshal(job); err == nil {
 			str := string(b)
 			jobChan["add"] <- str

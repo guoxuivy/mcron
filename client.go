@@ -14,7 +14,7 @@ import (
 
 //客户端配置
 const (
-	//服务器地址 只响应 json格式 必须包含action
+	//服务器地址
 	SERVER_IP = "192.168.38.70"
 )
 
@@ -37,12 +37,13 @@ func (this *ClientClass) register() {
 	}
 	defer conn.Close()
 	conn.Write([]byte(`{"Action":"register","Param":["Param1","Param2"]}`))
-
 	var buf = make([]byte, 65536)
 	n, _ := conn.Read(buf)
-	res := string(buf[:n])
-	if res == "ok" {
-		log.Println("注册成功！")
+	json := jsonDecode(buf[:n])
+	action := jsonStr("Action", json)
+	if action == "register_back" {
+		res := jsonStr("Data", json)
+		log.Println("client:注册返回:", res)
 		return
 	}
 
@@ -62,7 +63,6 @@ func (this *ClientClass) Listen() {
 			log.Println("client:接受客户端连接异常:", err.Error())
 			continue
 		}
-		//log.Println("client:收到调度服务器指令:", conn.RemoteAddr().String())
 		defer conn.Close()
 		go func() {
 			result, err := ioutil.ReadAll(conn)
@@ -70,32 +70,39 @@ func (this *ClientClass) Listen() {
 				log.Println("读取指令数据错误:", err.Error())
 				return
 			}
-			log.Println("client:收到服务器指令数据:", string(result))
-			this.Worker(string(result))
+
+			json := jsonDecode(result)
+			act := jsonStr("Action", json)
+			if act == "job_run" {
+				arr := jsonArr("Data", json)
+				id := arr[0].(string)
+				shell := arr[1].(string)
+				log.Println("client:收到服务器指令数据:", shell)
+				this.Worker(id, shell)
+			}
+
 		}()
 	}
 }
 
 //向服务器发送数据
-func (this *ClientClass) _sendMsg(desc string) {
+func (this *ClientClass) _sendMsg(id string, desc string) {
 	conn, err := net.Dial("tcp", SERVER_IP+":"+strconv.Itoa(S_PORT))
 	if err != nil {
 		log.Println("连接服务端端失败:", err.Error())
 		return
 	}
 	defer conn.Close()
-	conn.Write([]byte(`{"Action":"jobbcak","Data":"` + desc + `"}`))
-	//conn.Write([]byte(desc))
-	//log.Println("client:处理任务完成：" + desc)
+	conn.Write([]byte(`{"Action":"job_bcak","Data":["` + id + `","` + desc + `"]}`))
 }
 
 //处理指令 返回处理结果
-func (this *ClientClass) Worker(shell string) {
+func (this *ClientClass) Worker(id string, shell string) {
 	//time.Sleep(time.Second * 1)
 	log := this._execCommand(shell)
 	//执行结果日志记录在本地，向调度中心返回执行结果即可
 	go this.WriteLog("shell_run", "["+time.Now().Format("2006-01-02 15:04:05")+"] run ["+shell+"] out: "+log)
-	this._sendMsg("done")
+	this._sendMsg(id, "done")
 }
 
 /**

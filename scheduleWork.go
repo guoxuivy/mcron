@@ -1,8 +1,6 @@
 package mcron
 
 import (
-	//"io/ioutil"
-	"encoding/json"
 	"log"
 	"net"
 	"strconv"
@@ -30,16 +28,15 @@ func (this *scheduleWorker) Start() {
  */
 func (this *scheduleWorker) sendJob(job Job) {
 	//根据任务配置分发到相应客户端执行
-	clientIp := "127.0.0.1" //默认客户端ip
+	//clientIp := "127.0.0.1" //默认客户端ip
+	clientIp := job.IP
 	conn, err := net.DialTimeout("tcp", clientIp+":"+strconv.Itoa(C_PORT), time.Second*2)
 	if err != nil {
-		log.Println("连接客户端端失败:", err.Error())
+		Server.Schedule.WriteLog(job.Id, "send_job", "发送任务失败:"+err.Error())
 		return
 	}
 	defer conn.Close()
-	shell := job.Shell
-	conn.Write([]byte(shell))
-	log.Println("server:向客户端发送任务成功：任务ID", job.Id, shell)
+	conn.Write([]byte(`{"Action":"job_run","Data":["` + strconv.Itoa(job.Id) + `","` + job.Shell + `"]}`))
 }
 
 /**
@@ -49,8 +46,11 @@ func (this *scheduleWorker) sendJob(job Job) {
  */
 func (this *scheduleWorker) backJob(json map[string]interface{}) {
 	//time.Sleep(time.Second * 1)
-	res := this.getData(json)
-	log.Println("server:收到任务反馈数据:", res)
+	arr := jsonArr("Data", json)
+	idstr := arr[0].(string)
+	err := arr[1].(string)
+	id, _ := strconv.Atoi(idstr)
+	Server.Schedule.WriteLog(id, "job_run_back", err)
 }
 
 /**
@@ -70,10 +70,10 @@ func (this *scheduleWorker) _clientListen() {
 		conn, err := listen.AcceptTCP()
 		if err != nil {
 			log.Println("接受客户端连接异常:", err.Error())
+			//log.Println("接受客户端连接:", conn.RemoteAddr().String())
 			continue
 		}
 		defer conn.Close()
-		//log.Println("接受客户端连接:", conn.RemoteAddr().String())
 		go this.handleConn(conn)
 	}
 }
@@ -87,58 +87,15 @@ func (this *scheduleWorker) handleConn(conn net.Conn) {
 			break
 		}
 		if n > 0 {
-			json := this.jsonDecode(buf[:n])
-			action := this.getAction(json)
+			json := jsonDecode(buf[:n])
+			action := jsonStr("Action", json)
 			if action == "register" {
 				log.Println("server:收到注册信息:", json["Param"])
-				conn.Write([]byte("ok"))
+				conn.Write([]byte(`{"Action":"register_back","Data":"ok"}`))
 			}
-			if action == "jobbcak" {
+			if action == "job_bcak" {
 				this.backJob(json)
 			}
-			//this.backJob(action)
-
 		}
-	}
-}
-
-//统一传输协议
-//b := []byte(`{"Action":"register","Param":["Gomez","Morticia"]}`)
-func (this *scheduleWorker) jsonDecode(b []byte) map[string]interface{} {
-	var f interface{}
-	err := json.Unmarshal(b, &f)
-	if err != nil {
-		log.Println("非json数据：", err)
-	}
-	m := f.(map[string]interface{})
-	return m
-	//	log.Println(m["Action"], m["Param"])
-	//	for k, v := range m {
-	//		switch vv := v.(type) {
-	//		case string:
-	//			log.Println(k, "is string", vv)
-	//		case int:
-	//			log.Println(k, "is int", vv)
-	//		case []interface{}:
-	//			log.Println(k, "is an array:")
-	//			for i, u := range vv {
-	//				log.Println(i, u)
-	//			}
-	//		default:
-	//			log.Println(k, "is of a type I don't know how to handle")
-	//		}
-	//	}
-}
-func (this *scheduleWorker) getAction(m map[string]interface{}) string {
-	return this._string("Action", m)
-}
-func (this *scheduleWorker) getData(m map[string]interface{}) string {
-	return this._string("Data", m)
-}
-func (this *scheduleWorker) _string(key string, m map[string]interface{}) string {
-	if nil == m[key] {
-		return ""
-	} else {
-		return m[key].(string)
 	}
 }

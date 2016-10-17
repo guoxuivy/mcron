@@ -42,6 +42,16 @@ type Job struct {
 	ScheduleExpr string
 	Desc         string
 	Shell        string
+	IP           string
+}
+
+//任务描述
+type JobLog struct {
+	Id         int
+	JobId      int
+	Action     string
+	Log        string
+	CreateTime string
 }
 
 type jobModel struct{}
@@ -53,9 +63,29 @@ func (this *jobModel) Add(j Job) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	stmt, _ := db.Prepare("INSERT INTO `job_list` (`schedule_expr`, `desc`, `shell`,`status`) VALUES (?,?,?,1)")
+	stmt, _ := db.Prepare("INSERT INTO `job_list` (`schedule_expr`, `desc`, `shell`, `ip`, `status`) VALUES (?,?,?,?,1)")
 	defer stmt.Close()
-	res, err := stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell)
+	res, err := stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell, j.IP)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), err
+}
+
+//添加任务日志
+func (this *jobModel) AddLog(log JobLog) (int, error) {
+	//写入数据库
+	db, err := getDb()
+	if err != nil {
+		return 0, err
+	}
+	stmt, _ := db.Prepare("INSERT INTO `job_log` (`job_id`, `action`, `log`) VALUES (?,?,?)")
+	defer stmt.Close()
+	res, err := stmt.Exec(log.JobId, log.Action, log.Log)
 	if err != nil {
 		return 0, err
 	}
@@ -72,10 +102,27 @@ func (this *jobModel) getList() map[int]Job {
 	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
-			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"]}
+			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"], v["ip"]}
 		}
 	}
 	return jobs
+}
+
+func (this *jobModel) getOne(id int) Job {
+	db, err := getDb()
+	var job Job
+	one, err := db.Query("SELECT `id`, `schedule_expr`, `desc`, `shell`, `ip` FROM `job_list` WHERE `id` = ? ", id)
+	if err != nil {
+		log.Println(err)
+	}
+	defer one.Close()
+	for one.Next() {
+		err := one.Scan(&job.Id, &job.ScheduleExpr, &job.Desc, &job.Shell, &job.IP)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return job
 }
 
 //通用列表查询

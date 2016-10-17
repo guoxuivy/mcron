@@ -9,7 +9,7 @@ import (
 
 //ajax标准输出
 type Result struct {
-	Ret    int
+	Ret    int //  0/1
 	Reason string
 	Data   interface{}
 }

@@ -16,19 +16,21 @@ type jobActiveChan map[string]chan string
 
 //任务管理
 type ScheduleManager struct {
-	currentJobs CurrJob         //当前正在执行的任务id列表
-	cronJob     *cron.Cron      //周期任务驱动型任务
-	sWorker     *scheduleWorker //事件任务驱动型日任务
-	jobModel    *jobModel       //数据库操作类
-	jobChan     map[string]chan string
+	currentJobs CurrJob                //当前正在执行的任务id列表
+	cronJob     *cron.Cron             //周期任务驱动型任务
+	sWorker     *scheduleWorker        //事件任务驱动型日任务
+	jobModel    *jobModel              //数据库操作类
+	jobChan     map[string]chan string //任务操作管道
+	jobLogChan  chan JobLog            //任务日志记录管道
 }
 
 func NewScheduleManager() *ScheduleManager {
 	chans := jobActiveChan{
-		"add":    make(chan string, 10),
+		"add":    make(chan string, 10), //json_str
 		"remove": make(chan string, 10),
 		"stop":   make(chan string, 10),
 		"start":  make(chan string, 10),
+		"reload": make(chan string, 10),
 
 		"job_search": make(chan string, 1), //web 当前任务查询请求
 		"job_list":   make(chan string, 1), //web 当前任务查询结果返回 json 传送
@@ -39,6 +41,8 @@ func NewScheduleManager() *ScheduleManager {
 	instance.currentJobs = make(map[int]Job)
 	instance.sWorker = &scheduleWorker{}
 	instance.jobModel = &jobModel{}
+	instance.jobLogChan = make(chan JobLog, 1000)
+
 	return instance
 }
 
@@ -73,6 +77,13 @@ func (this *ScheduleManager) AddJob(j Job) {
 	this._addJob(j)
 }
 
+//从数据库重载任务
+func (this *ScheduleManager) ReloadJob(id int) {
+	job := this.jobModel.getOne(id)
+	this.RemoveJob(id)
+	this._addJob(job)
+}
+
 //添加任务
 func (this *ScheduleManager) _addJob(j Job) {
 	job := NewScheduleJob(j.Id, this._scheduleActive)
@@ -99,6 +110,8 @@ func (this *ScheduleManager) _scheduleActive(id int) {
  * @return
  */
 func (this *ScheduleManager) Monitor() {
+	go this.doLog()
+
 	go func() {
 		//心跳（每秒）
 		ticker := time.NewTicker(time.Second)
@@ -116,13 +129,17 @@ func (this *ScheduleManager) Monitor() {
 				if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
 					this.AddJob(job)
 				}
-			case jobid := <-this.jobChan["remove"]:
+			case jobid := <-this.jobChan["remove"]: //彻底删除任务
 				log.Println(jobid)
-			case jobid := <-this.jobChan["stop"]:
+			case jobid := <-this.jobChan["stop"]: //暂停任务
 				log.Println(jobid)
-			case jobid := <-this.jobChan["start"]:
+			case jobid := <-this.jobChan["start"]: //开启暂停中的任务
 				log.Println(jobid)
-			case <-this.jobChan["job_search"]:
+			case jobid := <-this.jobChan["reload"]: //彻底删除任务
+				id, _ := strconv.Atoi(jobid)
+				this.ReloadJob(id)
+				log.Println("任务重载：", jobid)
+			case <-this.jobChan["job_search"]: //查询运行时任务
 				//非阻塞式
 				go func() {
 					ids := []int{}
@@ -136,6 +153,34 @@ func (this *ScheduleManager) Monitor() {
 			}
 		}
 	}()
+}
+
+/**
+ * 任务日志写入队列
+ * @param id 任务id
+ * @param act 任务操作
+ * @param log 具体日志
+ * @return
+ */
+func (this *ScheduleManager) WriteLog(jobid int, act string, logstr string) {
+	var log JobLog
+	log.JobId = jobid
+	log.Action = act
+	log.Log = logstr
+	this.jobLogChan <- log
+}
+
+/**
+ * 任务日志入库处理
+ */
+func (this *ScheduleManager) doLog() {
+	for {
+		jobLog := <-this.jobLogChan
+		_, err := this.jobModel.AddLog(jobLog)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
 }
 
 func (this *ScheduleManager) Run() {

@@ -21,3 +21,11 @@ $("form[data-type=formAction]").submit(function(event){
         }
     },"json")
 })
+
+
+$(".reload").click(function(){
+    var id = $(this).parent().attr("id");
+    $.post("/admin/reload", {id:id}, function(ret){
+        alert(ret.Reason);
+    },"json")
+})

@@ -104,3 +104,61 @@ a:link,a:visited {
     height:25px;
 }
 
+
+.btn {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: rgb(245, 245, 245);
+    background-image: -moz-linear-gradient(center top , rgb(255, 255, 255), rgb(230, 230, 230));
+    background-repeat: repeat-x;
+    border-color: rgb(204, 204, 204) rgb(204, 204, 204) rgb(187, 187, 187);
+    border-image: none;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: rgb(51, 51, 51);
+    cursor: pointer;
+    display: inline-block;
+    font-size: 13px;
+    line-height: 18px;
+    margin-bottom: 0;
+    padding: 4px 10px;
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
+}
+.btn:hover, .btn:active, .btn.active, .btn.disabled, .btn[disabled] {
+    background-color: rgb(230, 230, 230);
+}
+.btn:active, .btn.active {
+}
+.btn:first-child {
+}
+.btn:hover {
+    background-color: rgb(230, 230, 230);
+    background-position: 0 -15px;
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+    transition: background-position 0.1s linear 0s;
+}
+.btn:focus {
+    outline: thin dotted rgb(51, 51, 51);
+    outline-offset: -2px;
+}
+.btn.active, .btn:active {
+    background-color: rgb(230, 230, 230);
+    background-image: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    outline: 0 none;
+}
+.btn.disabled, .btn[disabled] {
+    background-color: rgb(230, 230, 230);
+    background-image: none;
+    box-shadow: none;
+    cursor: default;
+    opacity: 0.65;
+}
+

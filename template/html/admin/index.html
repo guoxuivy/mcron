@@ -2,11 +2,11 @@
 {{define "main"}}
 <div>欢迎登陆管理后台首页</div>
 <table class="main_table">
-    <thead><tr><th>任务号</th><th>任务规则</th><th>执行命令</th><th>任务说明</th></tr></thead>
+    <thead><tr><th>任务号</th><th>任务规则</th><th>执行命令</th><th>客户端IP</th><th>任务说明</th><th>操作</th></tr></thead>
     <tbody>
     {{with .List}}  
     {{range .}}  
-    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.Desc}}</td></tr>
+    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.IP}}</td><td>{{.Desc}}</td><td id="{{.Id}}"><button class="btn reload">重置</button></td></tr>
     {{end}}  
     {{end}}
     </tbody>
