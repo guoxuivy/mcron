@@ -154,9 +154,16 @@ func (this *ScheduleManager) Monitor() {
 				id, _ := strconv.Atoi(jobid)
 				this.ReloadJob(id)
 				log.Println("任务重载：", jobid)
-			case <-this.jobChan["job_search"]: //查询运行时任务
-				//非阻塞式
-				go func() {
+			case jobid := <-this.jobChan["job_search"]: //查询运行时任务
+				id, _ := strconv.Atoi(jobid)
+				if id > 0 {
+					if _, ok := this.currentJobs[id]; ok {
+						//存在
+						this.jobChan["job_list"] <- "1"
+					} else {
+						this.jobChan["job_list"] <- "0"
+					}
+				} else {
 					ids := []int{}
 					for id, _ := range this.currentJobs {
 						ids = append(ids, id)
@@ -164,7 +171,7 @@ func (this *ScheduleManager) Monitor() {
 					if b, err := json.Marshal(ids); err == nil {
 						this.jobChan["job_list"] <- string(b)
 					}
-				}()
+				}
 			}
 		}
 	}()

@@ -22,14 +22,14 @@ type adminController struct {
 func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request, user string) {
 	t := AdminTpl("index")
 	list := getModel().getList()
-	//获取任务运行状态
-	jobChan["job_search"] <- "1"
+	//获取全部任务运行状态 参数为0
+	jobChan["job_search"] <- "0"
 	jobstr := <-jobChan["job_list"]
 	ids := []int{}
 	if err := json.Unmarshal([]byte(jobstr), &ids); err == nil {
 		for _, id := range ids {
 			job := list[id]
-			job.Desc = list[id].Desc + " run"
+			job.Desc = list[id].Desc + " running"
 			list[id] = job
 		}
 	}
@@ -58,6 +58,30 @@ func (this *adminController) StopAction(w http.ResponseWriter, r *http.Request, 
 	id := r.FormValue("id")
 	jobChan["stop"] <- id
 	OutputJson(w, 200, "已暂停此任务", nil)
+}
+
+//删除任务 未运行的任务才能删除
+func (this *adminController) DeleteAction(w http.ResponseWriter, r *http.Request, user string) {
+	err := r.ParseForm()
+	if err != nil {
+		OutputJson(w, 400, "参数错误", nil)
+		return
+	}
+	id := r.FormValue("id")
+
+	jobChan["job_search"] <- id
+	running := <-jobChan["job_list"]
+	if running == "1" {
+		OutputJson(w, 400, "运行中，请先停止任务", nil)
+		return
+	}
+	int_id, _ := strconv.Atoi(id)
+	err = getModel().delete(int_id)
+	if nil != err {
+		OutputJson(w, 400, "操作失败！", err)
+	} else {
+		OutputJson(w, 200, "操作成功！", nil)
+	}
 }
 
 //添加任务 (添加逻辑得重做 直接写库 通知chan)

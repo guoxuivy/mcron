@@ -119,6 +119,24 @@ func (this *jobModel) add(j Job) (int, error) {
 	return int(id), err
 }
 
+//删除任务
+func (this *jobModel) delete(id int) error {
+	db, err := getDb()
+	if err != nil {
+		return err
+	}
+	stmt, err := db.Prepare("DELETE FROM `job_list` WHERE `id` = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (this *jobModel) getOne(id int) Job {
 	db, err := getDb()
 	var job Job
