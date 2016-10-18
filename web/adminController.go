@@ -16,12 +16,12 @@ type Page struct {
 }
 
 type adminController struct {
+	model *jobModel
 }
 
 func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request, user string) {
 	t := AdminTpl("index")
-	model := &jobModel{}
-	list := model.getList()
+	list := getModel().getList()
 	//获取任务运行状态
 	jobChan["job_search"] <- "1"
 	jobstr := <-jobChan["job_list"]
@@ -61,13 +61,14 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 		shell := r.FormValue("shell")
 		ip := r.FormValue("ip")
 
-		job := &Job{0, scheduleExpr, desc, shell, ip}
-		if b, err := json.Marshal(job); err == nil {
-			str := string(b)
-			jobChan["add"] <- str
+		job := Job{0, scheduleExpr, desc, shell, ip}
+		id, err := getModel().add(job)
+		if err != nil {
+			OutputJson(w, 400, "添加失败！", err)
+		} else {
+			jobChan["reload"] <- strconv.Itoa(id) //加载新任务
+			OutputJson(w, 200, "添加成功！", nil)
 		}
-		msg := "ok"
-		OutputJson(w, 200, msg, nil)
 	}
 }
 
@@ -75,7 +76,7 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 func (this *adminController) OneAction(w http.ResponseWriter, r *http.Request, user string) {
 	id_str := r.FormValue("id")
 	id, _ := strconv.Atoi(id_str)
-	model := &jobModel{}
+	model := getModel()
 	row := model.getOne(id)
 	if row.Id > 0 {
 		OutputJson(w, 200, "ok", row)
@@ -94,9 +95,7 @@ func (this *adminController) EditAction(w http.ResponseWriter, r *http.Request, 
 	id, _ := strconv.Atoi(id_str)
 
 	job := Job{id, scheduleExpr, desc, shell, ip}
-	model := &jobModel{}
-	err := model.edit(job)
-
+	err := getModel().edit(job)
 	if err != nil {
 		OutputJson(w, 400, "更新失败！", err)
 	} else {

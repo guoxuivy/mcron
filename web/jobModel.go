@@ -34,6 +34,15 @@ func getDb() (*sql.DB, error) {
 	return DB, nil
 }
 
+var MODEL *jobModel
+
+func getModel() *jobModel {
+	if MODEL == nil {
+		MODEL = &jobModel{}
+	}
+	return MODEL
+}
+
 //数据库job 映射
 
 //任务描述
@@ -76,18 +85,38 @@ func (this *jobModel) edit(j Job) error {
 	if err != nil {
 		return err
 	}
-
 	stmt, err := db.Prepare("UPDATE `job_list` SET `schedule_expr`=?, `desc`=?, `shell`=?, `ip`=? WHERE `id` = ?")
 	if err != nil {
 		return err
 	}
-
 	defer stmt.Close()
 	_, err = stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell, j.IP, strconv.Itoa(j.Id))
 	if err != nil {
 		return err
 	}
 	return err
+}
+
+//添加任务
+func (this *jobModel) add(j Job) (int, error) {
+	db, err := getDb()
+	if err != nil {
+		return 0, err
+	}
+	stmt, err := db.Prepare("INSERT INTO `job_list` (`schedule_expr`, `desc`, `shell`, `ip`, `status`) VALUES (?,?,?,?,1)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+	res, err := stmt.Exec(j.ScheduleExpr, j.Desc, j.Shell, j.IP)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(id), err
 }
 
 func (this *jobModel) getOne(id int) Job {

@@ -70,15 +70,15 @@ func (this *ScheduleManager) GetJobs() CurrJob {
 }
 
 //写库添加任务
-func (this *ScheduleManager) AddJob(j Job) {
-	id, err := this.jobModel.Add(j)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-	j.Id = id
-	this._addJob(j)
-}
+//func (this *ScheduleManager) AddJob(j Job) {
+//	id, err := this.jobModel.Add(j)
+//	if err != nil {
+//		log.Println(err.Error())
+//		return
+//	}
+//	j.Id = id
+//	this._addJob(j)
+//}
 
 //从数据库重载任务
 func (this *ScheduleManager) ReloadJob(id int) {
@@ -127,11 +127,11 @@ func (this *ScheduleManager) Monitor() {
 	go func() {
 		for {
 			select {
-			case jobstr := <-this.jobChan["add"]:
-				var job Job
-				if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
-					this.AddJob(job)
-				}
+			case <-this.jobChan["add"]: //已废弃
+				//				var job Job
+				//				if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
+				//					this.AddJob(job)
+				//				}
 			case jobid := <-this.jobChan["remove"]: //彻底删除任务
 				log.Println(jobid)
 			case jobid := <-this.jobChan["stop"]: //暂停任务
