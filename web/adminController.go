@@ -46,7 +46,18 @@ func (this *adminController) ReloadAction(w http.ResponseWriter, r *http.Request
 	id := r.FormValue("id")
 	jobChan["reload"] <- id
 	OutputJson(w, 200, "已重置此任务", nil)
-	return
+}
+
+//暂停任务
+func (this *adminController) StopAction(w http.ResponseWriter, r *http.Request, user string) {
+	err := r.ParseForm()
+	if err != nil {
+		OutputJson(w, 400, "参数错误", nil)
+		return
+	}
+	id := r.FormValue("id")
+	jobChan["stop"] <- id
+	OutputJson(w, 200, "已暂停此任务", nil)
 }
 
 //添加任务 (添加逻辑得重做 直接写库 通知chan)

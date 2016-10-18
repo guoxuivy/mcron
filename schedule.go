@@ -87,17 +87,25 @@ func (this *ScheduleManager) ReloadJob(id int) {
 	this._addJob(job)
 }
 
+//删除任务
+func (this *ScheduleManager) DeleteJob(id int) {
+	//先停止
+	this.RemoveJob(id)
+	//再数据库删除
+
+}
+
+//零时移除一个执行中的任务（不删除数据库） stop
+func (this *ScheduleManager) RemoveJob(id int) {
+	this.cronJob.RemoveJob(strconv.Itoa(id))
+	delete(this.currentJobs, id)
+}
+
 //添加任务
 func (this *ScheduleManager) _addJob(j Job) {
 	job := NewScheduleJob(j.Id, this._scheduleActive)
 	this.cronJob.AddJob(j.ScheduleExpr, job, strconv.Itoa(j.Id))
 	this.currentJobs[j.Id] = j
-}
-
-//零时移除一个执行中的任务（不删除数据库）
-func (this *ScheduleManager) RemoveJob(id int) {
-	this.cronJob.RemoveJob(strconv.Itoa(id))
-	delete(this.currentJobs, id)
 }
 
 //任务分发执行
@@ -133,9 +141,13 @@ func (this *ScheduleManager) Monitor() {
 				//					this.AddJob(job)
 				//				}
 			case jobid := <-this.jobChan["remove"]: //彻底删除任务
-				log.Println(jobid)
+				id, _ := strconv.Atoi(jobid)
+				this.DeleteJob(id)
+				log.Println("任务删除：", jobid)
 			case jobid := <-this.jobChan["stop"]: //暂停任务
-				log.Println(jobid)
+				id, _ := strconv.Atoi(jobid)
+				this.RemoveJob(id)
+				log.Println("任务暂停：", jobid)
 			case jobid := <-this.jobChan["start"]: //开启暂停中的任务
 				log.Println(jobid)
 			case jobid := <-this.jobChan["reload"]: //彻底删除任务

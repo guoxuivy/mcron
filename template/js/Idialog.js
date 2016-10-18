@@ -169,13 +169,16 @@ var d = Idialog({
 	 * 弹出框  气泡形式
 	 * @type {Object}
 	 */
-	Idialog.tips=function(msg,time){
+	Idialog.tips=function(msg,time,func){
 		if(time==undefined) time=2;
 		var tips=$('<div class="idialog_tips">'+msg+'</div>');
 		tips.appendTo("body");
 		tips.css('margin-left','-'+tips.width()/2+'px');
 		setTimeout(function() {
 			tips.remove();
+			if(typeof(func) == 'function'){
+				func();
+			}
 		},time*1000);
 	};
 

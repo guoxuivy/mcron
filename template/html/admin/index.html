@@ -6,7 +6,7 @@
     <tbody>
     {{with .List}}  
     {{range .}}  
-    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.IP}}</td><td>{{.Desc}}</td><td id="{{.Id}}"><button class="btn reload">重置</button><button class="btn edit">修改</button></td></tr>
+    <tr><td>{{.Id}}</td><td>{{.ScheduleExpr}}</td><td>{{.Shell}}</td><td>{{.IP}}</td><td>{{.Desc}}</td><td id="{{.Id}}"><button class="btn stop">暂停</button><button class="btn reload">重置</button><button class="btn edit">修改</button></td></tr>
     {{end}}  
     {{end}}
     </tbody>
@@ -41,7 +41,17 @@ $(function(){
 	$(".reload").click(function(){
 	    var id = $(this).parent().attr("id");
 	    $.post("/admin/reload", {id:id}, function(ret){
-	        alert(ret.Msg);
+			Idialog.tips(ret.Msg2,function(){
+				history.go(0);
+			})
+	    },"json")
+	});
+	$(".stop").click(function(){
+	    var id = $(this).parent().attr("id");
+	    $.post("/admin/stop", {id:id}, function(ret){
+	        Idialog.tips(ret.Msg,2,function(){
+				history.go(0);
+			});
 	    },"json")
 	});
 	
