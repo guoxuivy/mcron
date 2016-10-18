@@ -1,0 +1,20 @@
+{{template "layout" .}}
+{{define "main"}}
+<h2>任务日志</h2>
+{{$job:=.Job}} 
+<p>任务ID：{{$job.Id}}</p>
+<p>任务说明：{{$job.Desc}}</p>
+<p>任务规则：{{$job.ScheduleExpr}}</p>
+<p>任务脚本：{{$job.Shell}}</p>
+<p>任务执行IP：{{$job.IP}}</p>
+
+<table class="main_table">
+    <thead><tr><th>事件</th><th>执行结果</th><th>时间</th></tr></thead>
+    <tbody>
+    {{range $v:=.LogList}}  
+    <tr><td>{{$v.action}}</td><td>{{$v.log}}</td><td>{{$v.create_time}}</td></tr>
+    {{end}} 
+    </tbody>
+</table>
+{{end}}
+

@@ -154,14 +154,24 @@ func (this *jobModel) getOne(id int) Job {
 	return job
 }
 
-//通用列表查询
+//查询全部任务
 func (this *jobModel) findAll() (map[int]map[string]string, error) {
+	return this._query("SELECT * FROM `job_list` WHERE `status` = 1 ")
+}
+
+//任务日志
+func (this *jobModel) getJobLog(id int) (map[int]map[string]string, error) {
+	return this._query("SELECT * FROM `job_log` WHERE `job_id` = " + strconv.Itoa(id) + " ORDER BY `create_time` DESC LIMIT 0,100")
+}
+
+//通用列表查询
+func (this *jobModel) _query(sql string) (map[int]map[string]string, error) {
 	db, err := getDb()
 	if err != nil {
 		return nil, err
 	}
 	//查询数据库
-	query, err := db.Query("SELECT * FROM `job_list` WHERE `status` = ? ", 1)
+	query, err := db.Query(sql)
 	if err != nil {
 		return nil, err
 	}

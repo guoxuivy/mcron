@@ -148,12 +148,14 @@ func (this *ScheduleManager) Monitor() {
 				id, _ := strconv.Atoi(jobid)
 				this.RemoveJob(id)
 				log.Println("任务暂停：", jobid)
+				this.WriteLog(id, "job_stop", "任务被暂停")
 			case jobid := <-this.jobChan["start"]: //开启暂停中的任务
 				log.Println(jobid)
 			case jobid := <-this.jobChan["reload"]: //彻底删除任务
 				id, _ := strconv.Atoi(jobid)
 				this.ReloadJob(id)
 				log.Println("任务重载：", jobid)
+				this.WriteLog(id, "job_reload", "任务被重载")
 			case jobid := <-this.jobChan["job_search"]: //查询运行时任务
 				id, _ := strconv.Atoi(jobid)
 				if id > 0 {

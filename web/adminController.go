@@ -13,6 +13,8 @@ type User struct {
 type Page struct {
 	UserName string
 	List     map[int]Job
+	Job      Job
+	LogList  map[int]map[string]string
 }
 
 type adminController struct {
@@ -33,7 +35,31 @@ func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request,
 			list[id] = job
 		}
 	}
-	t.Execute(w, &Page{user, list})
+
+	page := &Page{}
+	page.UserName = user
+	page.List = list
+
+	t.Execute(w, page)
+}
+
+func (this *adminController) ViewAction(w http.ResponseWriter, r *http.Request, user string) {
+	r.ParseForm()
+	idstr := r.FormValue("id")
+	id, _ := strconv.Atoi(idstr)
+	model := getModel()
+	job := model.getOne(id)
+	if job.Id == 0 {
+		NotFoundHandler(w, r)
+		return
+	}
+	t := AdminTpl("view")
+	list, _ := model.getJobLog(id)
+	page := &Page{}
+	page.UserName = user
+	page.Job = job
+	page.LogList = list
+	t.Execute(w, page)
 }
 
 //重置任务
