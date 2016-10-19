@@ -18,7 +18,7 @@ var DB *sql.DB
 /**
  * 数据库连接
  */
-func getDb() (*sql.DB, error) {
+func GetDb() (*sql.DB, error) {
 	if DB == nil {
 		db, _ := sql.Open("mysql", MYSQL_DSN)
 		db.SetMaxOpenConns(200)
@@ -34,11 +34,11 @@ func getDb() (*sql.DB, error) {
 	return DB, nil
 }
 
-var MODEL *jobModel
+var MODEL *JobModel
 
-func getModel() *jobModel {
+func getModel() *JobModel {
 	if MODEL == nil {
-		MODEL = &jobModel{}
+		MODEL = &JobModel{}
 	}
 	return MODEL
 }
@@ -54,34 +54,43 @@ type Job struct {
 	IP           string
 }
 
-type jobModel struct{}
+type JobModel struct{}
 
-func (this *jobModel) getList() map[int]Job {
+func (this *JobModel) GetOne(id int) Job {
+	db, err := GetDb()
+	var job Job
+	one, err := db.Query("SELECT `id`, `schedule_expr`, `desc`, `shell`, `ip` FROM `job_list` WHERE `id` = ? ", id)
+	if err != nil {
+		log.Println(err)
+	}
+	defer one.Close()
+	for one.Next() {
+		err := one.Scan(&job.Id, &job.ScheduleExpr, &job.Desc, &job.Shell, &job.IP)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return job
+}
+
+func (this *JobModel) GetList() (map[int]Job, error) {
 	jobs := make(map[int]Job)
-	res, _ := this.findAll()
+	res, err := this.findAll()
+	if err != nil {
+		return jobs, err
+	}
 	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
 			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"], v["ip"]}
 		}
 	}
-	return jobs
-}
-
-func (this *jobModel) getShell(id int) string {
-	db, err := getDb()
-	if err != nil {
-		log.Println(err.Error())
-		return ""
-	}
-	var shell string
-	err = db.QueryRow("SELECT shell FROM `job_list` WHERE `id`=?", id).Scan(&shell)
-	return shell
+	return jobs, nil
 }
 
 //修改任务
-func (this *jobModel) edit(j Job) error {
-	db, err := getDb()
+func (this *JobModel) edit(j Job) error {
+	db, err := GetDb()
 	if err != nil {
 		return err
 	}
@@ -98,8 +107,8 @@ func (this *jobModel) edit(j Job) error {
 }
 
 //添加任务
-func (this *jobModel) add(j Job) (int, error) {
-	db, err := getDb()
+func (this *JobModel) add(j Job) (int, error) {
+	db, err := GetDb()
 	if err != nil {
 		return 0, err
 	}
@@ -120,8 +129,8 @@ func (this *jobModel) add(j Job) (int, error) {
 }
 
 //删除任务
-func (this *jobModel) delete(id int) error {
-	db, err := getDb()
+func (this *JobModel) delete(id int) error {
+	db, err := GetDb()
 	if err != nil {
 		return err
 	}
@@ -137,36 +146,47 @@ func (this *jobModel) delete(id int) error {
 	return nil
 }
 
-func (this *jobModel) getOne(id int) Job {
-	db, err := getDb()
-	var job Job
-	one, err := db.Query("SELECT `id`, `schedule_expr`, `desc`, `shell`, `ip` FROM `job_list` WHERE `id` = ? ", id)
-	if err != nil {
-		log.Println(err)
-	}
-	defer one.Close()
-	for one.Next() {
-		err := one.Scan(&job.Id, &job.ScheduleExpr, &job.Desc, &job.Shell, &job.IP)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-	return job
-}
-
 //查询全部任务
-func (this *jobModel) findAll() (map[int]map[string]string, error) {
+func (this *JobModel) findAll() (map[int]map[string]string, error) {
 	return this._query("SELECT * FROM `job_list` WHERE `status` = 1 ")
 }
 
-//任务日志
-func (this *jobModel) getJobLog(id int) (map[int]map[string]string, error) {
-	return this._query("SELECT * FROM `job_log` WHERE `job_id` = " + strconv.Itoa(id) + " ORDER BY `create_time` DESC LIMIT 0,100")
+/**
+ * 任务日志
+ * @param page 1\2\3...
+ * @return
+ */
+func (this *JobModel) getJobLog(id int, page int, size int) (map[int]map[string]string, error) {
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * size
+	limit := " LIMIT " + strconv.Itoa(offset) + "," + strconv.Itoa(size)
+	return this._query("SELECT * FROM `job_log` WHERE `job_id` = " + strconv.Itoa(id) + " ORDER BY `create_time` DESC " + limit)
+}
+
+//通用统计查询
+func (this *JobModel) countLog(id int) int64 {
+	db, err := GetDb()
+	var num int64
+	num = 0
+	one, err := db.Query("SELECT count(*) AS num FROM `job_log` WHERE `job_id` = ? ", id)
+	if err != nil {
+		return 0
+	}
+	defer one.Close()
+	for one.Next() {
+		err := one.Scan(&num)
+		if err != nil {
+			return 0
+		}
+	}
+	return num
 }
 
 //通用列表查询
-func (this *jobModel) _query(sql string) (map[int]map[string]string, error) {
-	db, err := getDb()
+func (this *JobModel) _query(sql string) (map[int]map[string]string, error) {
+	db, err := GetDb()
 	if err != nil {
 		return nil, err
 	}

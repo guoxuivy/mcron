@@ -184,6 +184,35 @@ a:link,a:visited {
 .group input:focus{
     border-left: 1px solid #CC865E;/*当输入框成为焦点时，左边框颜色编程褐色*/
 }
+.page {
+    clear: both;
+    margin-top: 0;
+    overflow: hidden;
+    padding: 10px 0 15px;
+	text-align: right;
+}
+.page span {
+	background: rgb(246, 246, 246) none repeat scroll 0 0;
+    font-weight: normal;
+	border: 1px solid rgb(235, 235, 235);
+    border-radius: 0;
+	margin-left: 5px;
+    overflow: hidden;
+    padding: 3px 8px;
+}
+.page a{
+    color: rgb(108, 108, 108);
+    font-weight: normal;
+}
+
+.page span:hover {
+    background-color: rgb(255, 156, 0);
+    color: rgb(255, 70, 78);
+    text-decoration: none;
+}
+.page .active a{
+    color: rgb(255, 70, 78);
+}
 
 
 

@@ -15,15 +15,16 @@ type Page struct {
 	List     map[int]Job
 	Job      Job
 	LogList  map[int]map[string]string
+	Data     map[string]interface{}
 }
 
 type adminController struct {
-	model *jobModel
+	model *JobModel
 }
 
 func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request, user string) {
 	t := AdminTpl("index")
-	list := getModel().getList()
+	list, _ := getModel().GetList()
 	//获取全部任务运行状态 参数为0
 	jobChan["job_search"] <- "0"
 	jobstr := <-jobChan["job_list"]
@@ -46,19 +47,25 @@ func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request,
 func (this *adminController) ViewAction(w http.ResponseWriter, r *http.Request, user string) {
 	r.ParseForm()
 	idstr := r.FormValue("id")
+	pstr := r.FormValue("_p")
 	id, _ := strconv.Atoi(idstr)
+	p, _ := strconv.Atoi(pstr)
 	model := getModel()
-	job := model.getOne(id)
+	job := model.GetOne(id)
 	if job.Id == 0 {
 		NotFoundHandler(w, r)
 		return
 	}
 	t := AdminTpl("view")
-	list, _ := model.getJobLog(id)
+	list, _ := model.getJobLog(id, p, 50)
+	count := model.countLog(id)
 	page := &Page{}
 	page.UserName = user
 	page.Job = job
 	page.LogList = list
+
+	page.Data = make(map[string]interface{})
+	page.Data["paginator"] = Paginator(p, 50, count)
 	t.Execute(w, page)
 }
 
@@ -138,7 +145,7 @@ func (this *adminController) OneAction(w http.ResponseWriter, r *http.Request, u
 	id_str := r.FormValue("id")
 	id, _ := strconv.Atoi(id_str)
 	model := getModel()
-	row := model.getOne(id)
+	row := model.GetOne(id)
 	if row.Id > 0 {
 		OutputJson(w, 200, "ok", row)
 	} else {

@@ -16,5 +16,17 @@
     {{end}} 
     </tbody>
 </table>
-{{end}}
+<div class="page">
+{{$data:=.Data}}
+	{{$paginator:=$data.paginator}}
+	<em>共{{$paginator.total}}条记录 共记{{$paginator.totalpages}}页</em>
+	<div class="right">
+		<span><a href="/admin/view?id={{$job.Id}}&_p={{$paginator.firstpage}}">上一页</a></span> 
+		{{range $index,$page := $paginator.pages}}
+		<span {{if eq $paginator.currpage $page }}class="active"{{end}}><a href="/admin/view?id={{$job.Id}}&_p={{$page}}">{{$page}}</a></span>  
+		{{end}}
+		<span><a href="/admin/view?id={{$job.Id}}&_p={{$paginator.lastpage}}">下一页</a></span>
+	</div>
+</div>
 
+{{end}}

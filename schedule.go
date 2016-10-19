@@ -19,7 +19,7 @@ type ScheduleManager struct {
 	currentJobs CurrJob                //当前正在执行的任务id列表
 	cronJob     *cron.Cron             //周期任务驱动型任务
 	sWorker     *scheduleWorker        //事件任务驱动型日任务
-	jobModel    *jobModel              //数据库操作类
+	model       *Model                 //数据库操作类
 	jobChan     map[string]chan string //任务操作管道
 	jobLogChan  chan JobLog            //任务日志记录管道
 }
@@ -40,7 +40,7 @@ func NewScheduleManager() *ScheduleManager {
 	instance.cronJob = cron.New()
 	instance.currentJobs = make(map[int]Job)
 	instance.sWorker = &scheduleWorker{}
-	instance.jobModel = &jobModel{}
+	instance.model = &Model{}
 	instance.jobLogChan = make(chan JobLog, 1000)
 
 	return instance
@@ -51,12 +51,13 @@ func (this *ScheduleManager) Start() {
 	//开启定时任务服务
 	this.cronJob.Start()
 	//加载数据库任务
-	list, err := this.jobModel.getList()
+	list, err := this.model.GetList()
 	if err != nil {
 		panic("服务器启动失败：" + err.Error())
 	}
+
 	for _, job := range list {
-		this._addJob(job)
+		this._addJob(Job(job))
 	}
 }
 
@@ -71,7 +72,7 @@ func (this *ScheduleManager) GetJobs() CurrJob {
 
 //写库添加任务
 //func (this *ScheduleManager) AddJob(j Job) {
-//	id, err := this.jobModel.Add(j)
+//	id, err := this.model.Add(j)
 //	if err != nil {
 //		log.Println(err.Error())
 //		return
@@ -82,9 +83,9 @@ func (this *ScheduleManager) GetJobs() CurrJob {
 
 //从数据库重载任务
 func (this *ScheduleManager) ReloadJob(id int) {
-	job := this.jobModel.getOne(id)
+	job := this.model.GetOne(id)
 	this.RemoveJob(id)
-	this._addJob(job)
+	this._addJob(Job(job))
 }
 
 //删除任务
@@ -200,7 +201,7 @@ func (this *ScheduleManager) WriteLog(jobid int, act string, logstr string) {
 func (this *ScheduleManager) doLog() {
 	for {
 		jobLog := <-this.jobLogChan
-		_, err := this.jobModel.AddLog(jobLog)
+		_, err := this.model.addLog(jobLog)
 		if err != nil {
 			log.Println(err.Error())
 		}
