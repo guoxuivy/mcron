@@ -1,50 +1,60 @@
-body, ul, li{margin:0;padding:0}
-.none {display:none;}
+@charset "utf-8";
+/* CSS Document */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dd, dl, dt, li, ol, ul, fieldset, form, label, legend, input, select, textarea, table, caption, tbody, tfoot, thead, tr, th, td{ margin: 0; padding: 0;}
+
+img{border:none;}
+a{text-decoration:none;color:#0e90d2;font-size:14px;}
+body{font-family:"微软雅黑";font-family: "Verdana, Arial, Helvetica, sans-serif";}
+a span  {cursor:pointer;}
+ul,li {list-style:none;}
+
+table {border-collapse: separate;text-align: right;}
+caption, th, td {text-align: left;font-weight: normal;}
+select, textarea, input, button {vertical-align:middle;font-family:inherit;font-size:100%;}
+q:before, q:after, blockquote:before, blockquote:after { content: "";}
+inline blockquote, q {quotes: "" "";}
+
+.clear{clear:both;}
+.none{display:none;}
 .left{float:left;}
 .right{float:right;}
-.login{}
-
 
 .head {
-    position:absolute;
     width:100%;
     height: 80px;
     border-bottom:1px solid #AAA;
 }
 .head_left {
-    position:absolute;
-    width:30%;
+    float:left;
+    width:70%;
+    margin-left: 10px;
+    padding-top: 10px;
     height: 70px;
-    left:40%
 }
 .head_right {
-    position:absolute;
-    left:70%;
-    width: 30%;
+    float:right;
+    height: 50px;
+    padding-right: 10px;
     padding-top: 30px;
     text-align: right;
 }
 
 .main_frame{
-	position:absolute;
     top:80px;
 	height:100%;
 	width:100%;
+    clear: both;
 }
 
-
-.left {
+.main_left {
     float:left;
     width:10%;
-    min-height:80%;
+    min-height:500px;
     border-right:1px solid #AAA;
 }
 
-.left ul{margin-top: 20px;}
-.left li{height:30px;display:block;padding-left: 20px;}
-
-
-
+.main_left ul{margin-top: 20px;}
+.main_left li{height:30px;display:block;padding-left: 20px;}
 
 .left_cur{
     background-color: #73938E;
@@ -53,13 +63,10 @@ body, ul, li{margin:0;padding:0}
 .main {
     margin-left:10%;
     min-height:80%;
-	padding-left:5px;
+	padding:10px;
 }
 
-
-
 a:link,a:visited {
-    font-size:14px;
     text-decoration:none;
 }
 
@@ -79,25 +86,23 @@ a:link,a:visited {
     align:right;
 }
 
-.ahref{
-    align:right;
-}
 
-.first_tr{
+.main_table thead tr{
     background-color: #73938E;
-    height:50px;
 }
-
-.first_tr th{
+.main_table thead th{
     border:1px solid #AAA;
+    color: beige;
+    font-weight: bold;
 }
 
 .main_table tr{
-    height:30px;
 }
 
-.main_table th{
-    border:1px solid #AAA;
+.main_table th, .main_table td {
+    border-top: 1px solid #DDD;
+    padding: 5px;
+    text-align: left;
 }
 
 .main_button {
@@ -112,8 +117,8 @@ a:link,a:visited {
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
-    background-color: rgb(245, 245, 245);
-    background-image: -moz-linear-gradient(center top , rgb(255, 255, 255), rgb(230, 230, 230));
+    background-color: #F5F5F5;
+    background-image: -moz-linear-gradient(center top , rgb(255, 255, 255), #E6E6E6);
     background-repeat: repeat-x;
     border-color: rgb(204, 204, 204) rgb(204, 204, 204) rgb(187, 187, 187);
     border-image: none;
@@ -133,14 +138,14 @@ a:link,a:visited {
     vertical-align: middle;
 }
 .btn:hover, .btn:active, .btn.active, .btn.disabled, .btn[disabled] {
-    background-color: rgb(230, 230, 230);
+    background-color: #E6E6E6;
 }
 .btn:active, .btn.active {
 }
 .btn:first-child {
 }
 .btn:hover {
-    background-color: rgb(230, 230, 230);
+    background-color: #E6E6E6;
     background-position: 0 -15px;
     color: rgb(51, 51, 51);
     text-decoration: none;
@@ -151,13 +156,13 @@ a:link,a:visited {
     outline-offset: -2px;
 }
 .btn.active, .btn:active {
-    background-color: rgb(230, 230, 230);
+    background-color: #E6E6E6;
     background-image: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
     outline: 0 none;
 }
 .btn.disabled, .btn[disabled] {
-    background-color: rgb(230, 230, 230);
+    background-color: #E6E6E6;
     background-image: none;
     box-shadow: none;
     cursor: default;
@@ -193,9 +198,9 @@ a:link,a:visited {
 	text-align: right;
 }
 .page span {
-	background: rgb(246, 246, 246) none repeat scroll 0 0;
+	background: #F6F6F6 none repeat scroll 0 0;
     font-weight: normal;
-	border: 1px solid rgb(235, 235, 235);
+	border: 1px solid #EBEBEB;
     border-radius: 0;
 	margin-left: 5px;
     overflow: hidden;
