@@ -113,6 +113,7 @@ func (this *adminController) DeleteAction(w http.ResponseWriter, r *http.Request
 	if nil != err {
 		OutputJson(w, 400, "操作失败！", err)
 	} else {
+		jobChan["remove"] <- id
 		OutputJson(w, 200, "操作成功！", nil)
 	}
 }

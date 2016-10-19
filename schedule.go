@@ -143,8 +143,8 @@ func (this *ScheduleManager) Monitor() {
 				//				}
 			case jobid := <-this.jobChan["remove"]: //彻底删除任务
 				id, _ := strconv.Atoi(jobid)
-				this.DeleteJob(id)
 				log.Println("任务删除：", jobid)
+				this.WriteLog(id, "job_delete", "任务被删除")
 			case jobid := <-this.jobChan["stop"]: //暂停任务
 				id, _ := strconv.Atoi(jobid)
 				this.RemoveJob(id)
