@@ -104,7 +104,7 @@ func (this *ClientClass) _sendMsg(id string, desc string) {
 	conn.Write([]byte(`{"Action":"job_bcak","Data":["` + id + `","` + desc + `"]}`))
 }
 
-//处理指令 返回处理结果
+//处理指令 返回处理结果 服务器记录执行结果日志
 func (this *ClientClass) Worker(id string, shell string) {
 	log, err := this._execCommand(shell)
 	if err != nil {

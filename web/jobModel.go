@@ -52,6 +52,7 @@ type Job struct {
 	Desc         string
 	Shell        string
 	IP           string
+	Running      bool
 }
 
 type JobModel struct{}
@@ -59,6 +60,7 @@ type JobModel struct{}
 func (this *JobModel) GetOne(id int) Job {
 	db, err := GetDb()
 	var job Job
+	job.Running = false
 	one, err := db.Query("SELECT `id`, `schedule_expr`, `desc`, `shell`, `ip` FROM `job_list` WHERE `id` = ? ", id)
 	if err != nil {
 		log.Println(err)
@@ -82,7 +84,7 @@ func (this *JobModel) GetList() (map[int]Job, error) {
 	if res != nil {
 		for _, v := range res {
 			id, _ := strconv.Atoi(v["id"])
-			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"], v["ip"]}
+			jobs[id] = Job{id, v["schedule_expr"], v["desc"], v["shell"], v["ip"], false}
 		}
 	}
 	return jobs, nil

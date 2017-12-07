@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	TMP_DIR = "github.com/guoxuivy/mcron/template"
+	// TMP_DIR = "github.com/guoxuivy/mcron/template"
+	TMP_DIR = "template"
 )
 
 //任务在线处理管道
@@ -21,6 +22,6 @@ func WebRun(chans map[string]chan string) {
 	http.HandleFunc("/admin/", adminHandler)
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/", NotFoundHandler)
-	http.ListenAndServe(":8888", nil)
+	http.ListenAndServe(":3389", nil)
 	log.Println("web服务器开启")
 }

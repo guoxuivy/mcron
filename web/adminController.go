@@ -32,7 +32,8 @@ func (this *adminController) IndexAction(w http.ResponseWriter, r *http.Request,
 	if err := json.Unmarshal([]byte(jobstr), &ids); err == nil {
 		for _, id := range ids {
 			job := list[id]
-			job.Desc = list[id].Desc + " running"
+			job.Desc = list[id].Desc
+			job.Running = true
 			list[id] = job
 		}
 	}
@@ -93,6 +94,18 @@ func (this *adminController) StopAction(w http.ResponseWriter, r *http.Request, 
 	OutputJson(w, 200, "已暂停此任务", nil)
 }
 
+//执行一次任务
+func (this *adminController) OnceAction(w http.ResponseWriter, r *http.Request, user string) {
+	err := r.ParseForm()
+	if err != nil {
+		OutputJson(w, 400, "参数错误", nil)
+		return
+	}
+	id := r.FormValue("id")
+	jobChan["once"] <- id
+	OutputJson(w, 200, "执行一次此任务", nil)
+}
+
 //删除任务 未运行的任务才能删除
 func (this *adminController) DeleteAction(w http.ResponseWriter, r *http.Request, user string) {
 	err := r.ParseForm()
@@ -130,7 +143,7 @@ func (this *adminController) AddAction(w http.ResponseWriter, r *http.Request, u
 		shell := r.FormValue("shell")
 		ip := r.FormValue("ip")
 
-		job := Job{0, scheduleExpr, desc, shell, ip}
+		job := Job{0, scheduleExpr, desc, shell, ip, false}
 		id, err := getModel().add(job)
 		if err != nil {
 			OutputJson(w, 400, "添加失败！", err)
@@ -163,7 +176,7 @@ func (this *adminController) EditAction(w http.ResponseWriter, r *http.Request, 
 	id_str := r.FormValue("id")
 	id, _ := strconv.Atoi(id_str)
 
-	job := Job{id, scheduleExpr, desc, shell, ip}
+	job := Job{id, scheduleExpr, desc, shell, ip, false}
 	err := getModel().edit(job)
 	if err != nil {
 		OutputJson(w, 400, "更新失败！", err)

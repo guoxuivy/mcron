@@ -26,11 +26,12 @@ type ScheduleManager struct {
 
 func NewScheduleManager() *ScheduleManager {
 	chans := jobActiveChan{
-		"add":    make(chan string, 10), //json_str
+		"add":    make(chan string, 10), //暂时无用
 		"remove": make(chan string, 10),
 		"stop":   make(chan string, 10),
 		"start":  make(chan string, 10),
 		"reload": make(chan string, 10),
+		"once":   make(chan string, 10), //执行一次指定命令
 
 		"job_search": make(chan string, 1), //web 当前任务查询请求
 		"job_list":   make(chan string, 1), //web 当前任务查询结果返回 json 传送
@@ -50,6 +51,13 @@ func NewScheduleManager() *ScheduleManager {
 func (this *ScheduleManager) Start() {
 	//开启定时任务服务
 	this.cronJob.Start()
+	//加载数据库任务
+	// this.StartAllTask()
+
+}
+
+//加载启动全部数据库任务
+func (this *ScheduleManager) StartAllTask() {
 	//加载数据库任务
 	list, err := this.model.GetList()
 	if err != nil {
@@ -116,6 +124,13 @@ func (this *ScheduleManager) _scheduleActive(id int) {
 	go this.sWorker.sendJob(job)
 }
 
+//执行一次指定任务
+func (this *ScheduleManager) OnceJob(id int) {
+	log.Println("server:任务开始执行-任务ID ******start****", id)
+	job := this.model.GetOne(id)
+	go this.sWorker.sendJob(Job(job))
+}
+
 /**
  * 服务端监听 包括（客户端消息、客户端配置、客户端心跳等）或者直接使用zookeeper
  * @param
@@ -141,21 +156,27 @@ func (this *ScheduleManager) Monitor() {
 				//				if err := json.Unmarshal([]byte(jobstr), &job); err == nil {
 				//					this.AddJob(job)
 				//				}
-			case jobid := <-this.jobChan["remove"]: //彻底删除任务
+
+			case jobid := <-this.jobChan["once"]: //执行一次任务
 				id, _ := strconv.Atoi(jobid)
-				log.Println("任务删除：", jobid)
+				this.OnceJob(id)
+				// log.Println("执行一次任务：", jobid)
+				this.WriteLog(id, "job_once", "执行一次任务")
+			case jobid := <-this.jobChan["remove"]: //已经在数据库删除 仅仅记录日志
+				id, _ := strconv.Atoi(jobid)
+				// log.Println("任务删除：", jobid)
 				this.WriteLog(id, "job_delete", "任务被删除")
-			case jobid := <-this.jobChan["stop"]: //暂停任务
+			case jobid := <-this.jobChan["stop"]: //暂停任务 从当前任务列表移除
 				id, _ := strconv.Atoi(jobid)
 				this.RemoveJob(id)
-				log.Println("任务暂停：", jobid)
+				// log.Println("任务暂停：", jobid)
 				this.WriteLog(id, "job_stop", "任务被暂停")
 			case jobid := <-this.jobChan["start"]: //开启暂停中的任务
 				log.Println(jobid)
 			case jobid := <-this.jobChan["reload"]: //彻底删除任务
 				id, _ := strconv.Atoi(jobid)
 				this.ReloadJob(id)
-				log.Println("任务重载：", jobid)
+				// log.Println("任务重载：", jobid)
 				this.WriteLog(id, "job_reload", "任务被重载")
 			case jobid := <-this.jobChan["job_search"]: //查询运行时任务
 				id, _ := strconv.Atoi(jobid)
