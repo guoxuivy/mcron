@@ -16,6 +16,7 @@
 模板文件路径需要自行配置：TMP_DIR = "template"
 
 开启实例：
+```javascript
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
@@ -25,3 +26,4 @@ func main() {
 	mcron.StartServer() //服务端口默认开启一个 任务处理客户端
 	// mcron.StartClient()
 }
+```
