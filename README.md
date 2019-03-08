@@ -14,3 +14,14 @@
 </pre>
 
 模板文件路径需要自行配置：TMP_DIR = "template"
+
+开启实例：
+func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("panic", err)
+		}
+	}()
+	mcron.StartServer() //服务端口默认开启一个 任务处理客户端
+	// mcron.StartClient()
+}
